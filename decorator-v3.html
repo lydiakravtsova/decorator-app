@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Кабинет декоратора v3</title>
+<style>
+:root{--cr:#F5F0E8;--wm:#FAF7F2;--tc:#C4714A;--sg:#7A8C6E;--ch:#2C2C2C;--md:#6B6B6B;--lg:#D4CFC7;--gd:#B8963E;--ds:#E8E2D9;--gn:#4A7C5F;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,sans-serif;background:var(--cr);color:var(--ch);min-height:100vh;}
+.hdr{background:var(--ch);color:var(--cr);padding:14px 17px 10px;position:sticky;top:0;z-index:100;}
+.hdr-r{display:flex;justify-content:space-between;align-items:center;}
+.hdr h1{font-family:Georgia,serif;font-size:18px;font-weight:300;font-style:italic;}
+.hdr-d{font-size:11px;color:var(--lg);text-align:right;line-height:1.4;}
+.nav{display:flex;background:var(--ch);padding:0 15px 11px;gap:5px;overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nb{flex-shrink:0;padding:6px 11px;border:1px solid rgba(255,255,255,.2);border-radius:17px;background:transparent;color:rgba(255,255,255,.5);font-size:11px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+.nb.on{background:var(--tc);border-color:var(--tc);color:#fff;font-weight:500;}
+.scr{display:none;padding:15px 15px 100px;}
+.scr.on{display:block;}
+.card{background:var(--wm);border-radius:14px;padding:15px;margin-bottom:11px;border:1px solid var(--ds);}
+.ct{font-family:Georgia,serif;font-size:16px;font-weight:600;margin-bottom:11px;}
+.lbl{display:block;font-size:11px;font-weight:500;color:var(--md);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;margin-top:11px;}
+.inp{width:100%;background:var(--cr);border:1px solid var(--lg);border-radius:9px;padding:9px 11px;font-size:14px;color:var(--ch);outline:none;font-family:inherit;box-sizing:border-box;}
+.inp:focus{border-color:var(--tc);}
+textarea.inp{resize:vertical;min-height:60px;line-height:1.5;}
+.btn{display:flex;align-items:center;justify-content:center;gap:5px;padding:11px;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;width:100%;margin-top:10px;font-family:inherit;}
+.btc{background:var(--tc);color:#fff;} .bds{background:var(--ds);color:var(--ch);}
+.bsg{background:var(--sg);color:#fff;} .bgd{background:var(--gd);color:#fff;}
+.bch{background:var(--ch);color:#fff;} .btn:active{opacity:.82;}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.stat{background:var(--wm);border-radius:12px;padding:11px 7px;text-align:center;border:1px solid var(--ds);}
+.sn{font-family:Georgia,serif;font-size:22px;font-weight:600;color:var(--tc);line-height:1;}
+.sl{font-size:10px;color:var(--md);margin-top:3px;}
+.pb{height:4px;background:var(--ds);border-radius:2px;overflow:hidden;}
+.pbf{height:100%;background:linear-gradient(90deg,var(--tc),var(--gd));border-radius:2px;transition:width .4s;}
+.sec{font-size:11px;font-weight:500;color:var(--tc);text-transform:uppercase;letter-spacing:.1em;padding:11px 0 5px;border-bottom:2px solid var(--tc);margin-bottom:3px;}
+.ci{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--ds);cursor:pointer;}
+.ci:last-child{border-bottom:none;}
+.cb{width:20px;height:20px;border:2px solid var(--lg);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.ci.chk .cb{background:var(--sg);border-color:var(--sg);}
+.ci.chk .cb::after{content:'✓';color:#fff;font-size:11px;font-weight:700;}
+.ci.chk .c2{color:var(--md);text-decoration:line-through;}
+.c2{font-size:13px;line-height:1.4;flex:1;}
+.csb{font-size:12px;color:var(--md);margin-top:2px;}
+/* CLIENT CARDS */
+.ccard{background:var(--wm);border-radius:14px;margin-bottom:10px;border:1px solid var(--ds);overflow:hidden;}
+.ccard.archived{opacity:.65;border-style:dashed;}
+.ccard-wrap{position:relative;margin-bottom:10px;overflow:hidden;border-radius:14px;}
+.ccard-actions{position:absolute;right:0;top:0;bottom:0;display:flex;align-items:stretch;transform:translateX(100%);}
+.ccard-actions button{padding:0 18px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#fff;}
+.ccard-actions .act-arch{background:var(--gd);}
+.ccard-actions .act-del{background:var(--tc);}
+.ccard{border-radius:14px;margin-bottom:0;position:relative;transition:transform 0.2s ease;}
+.chead{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 14px 0;}
+.cname{font-family:Georgia,serif;font-size:17px;font-weight:600;flex:1;margin-right:8px;}
+.sbadge{font-size:10px;font-weight:500;padding:3px 8px;border-radius:7px;text-transform:uppercase;flex-shrink:0;}
+.s-new{background:#EBF3E8;color:var(--sg);} .s-active{background:#FFF0E8;color:var(--tc);} .s-done{background:var(--ds);color:var(--md);}
+.cinfo{font-size:12px;color:var(--md);line-height:1.6;padding:6px 14px 10px;}
+.ctabs{display:flex;gap:4px;padding:0 14px 10px;overflow-x:auto;scrollbar-width:none;}
+.ctabs::-webkit-scrollbar{display:none;}
+.ctp{flex-shrink:0;padding:6px 10px;border:none;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;background:var(--ds);color:var(--md);}
+.ctp.on{background:var(--ch);color:#fff;}
+.cpanel{display:none;padding:0 14px 14px;}
+.cpanel.on{display:block;}
+.crow{display:flex;gap:6px;margin-top:8px;}
+.crow button{flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;}
+/* SEARCH BAR */
+.search-row{display:flex;gap:8px;margin-bottom:12px;}
+.search-row .inp{flex:1;margin-top:0;}
+.sort-btn{flex-shrink:0;padding:9px 12px;border:1px solid var(--lg);border-radius:9px;background:var(--wm);font-size:12px;cursor:pointer;font-family:inherit;color:var(--ch);}
+.sort-btn.on{background:var(--ch);color:#fff;border-color:var(--ch);}
+/* FINANCE */
+.fmonth-tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;padding-bottom:2px;}
+.fmonth-tabs::-webkit-scrollbar{display:none;}
+.ftab{flex-shrink:0;padding:6px 12px;border:1px solid var(--lg);border-radius:17px;background:var(--wm);font-size:12px;cursor:pointer;font-family:inherit;color:var(--md);}
+.ftab.on{background:var(--tc);border-color:var(--tc);color:#fff;font-weight:500;}
+.frow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--ds);font-size:13px;}
+.frow:last-child{border-bottom:none;}
+/* SMETA */
+.sitem{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--ds);}
+.sitem:last-child{border-bottom:none;}
+/* TEMPLATES */
+.tmpl{background:var(--wm);border-radius:12px;padding:13px;margin-bottom:9px;border:1px solid var(--ds);}
+/* LESSONS */
+.lcard{background:var(--wm);border-radius:14px;margin-bottom:9px;border:1px solid var(--ds);overflow:hidden;}
+.lhead{padding:12px 13px;cursor:pointer;display:flex;align-items:center;gap:9px;}
+.lnum{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;color:#fff;}
+.lbody{display:none;padding:0 14px 14px;border-top:1px solid var(--ds);}
+.lcard.op .lbody{display:block;}
+.lcard.op .larr{transform:rotate(90deg);}
+.larr{font-size:12px;color:var(--lg);transition:transform .25s;}
+.th{background:#FFF8F0;border-radius:9px;padding:11px 13px;margin:11px 0;border-left:3px solid var(--tc);}
+.th p{font-size:13px;line-height:1.65;margin-bottom:4px;}
+.th p:last-child{margin-bottom:0;}
+.ti{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--ds);cursor:pointer;}
+.ti:last-child{border-bottom:none;}
+.tb{width:18px;height:18px;border:2px solid var(--lg);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.ti.dn .tb{background:var(--sg);border-color:var(--sg);}
+.ti.dn .tb::after{content:'✓';color:#fff;font-size:10px;font-weight:700;}
+.ti.dn .td{color:var(--md);text-decoration:line-through;}
+.td{font-size:13px;line-height:1.4;flex:1;}
+.ttp{font-size:11px;color:var(--md);margin-top:2px;font-style:italic;}
+.qz{background:#F0F5F0;border-radius:9px;padding:11px 13px;margin:11px 0;}
+.qq{font-size:13px;font-weight:500;margin-bottom:9px;line-height:1.4;}
+.qos{display:flex;flex-direction:column;gap:6px;}
+.qo{padding:8px 11px;background:#fff;border-radius:7px;border:1px solid var(--lg);font-size:12px;cursor:pointer;text-align:left;font-family:inherit;color:var(--ch);}
+.qo.ok{background:#EBF3E8;border-color:var(--sg);color:var(--gn);}
+.qo.no{background:#FFF0E8;border-color:var(--tc);color:var(--tc);}
+.qe{font-size:12px;margin-top:7px;padding:8px;background:#fff;border-radius:7px;line-height:1.5;display:none;}
+.qe.sh{display:block;}
+.wtag{display:inline-block;background:var(--ch);color:var(--cr);font-size:11px;padding:3px 8px;border-radius:6px;margin:13px 0 6px;}
+.de{background:var(--wm);border-radius:13px;padding:14px;margin-bottom:9px;border-left:3px solid var(--tc);}
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;}
+.mbg.op{display:flex;}
+.modal{background:var(--wm);border-radius:19px 19px 0 0;padding:19px 16px 40px;width:100%;max-height:90vh;overflow-y:auto;}
+.mh{width:34px;height:4px;background:var(--lg);border-radius:2px;margin:0 auto 15px;}
+.mt{font-family:Georgia,serif;font-size:19px;font-weight:600;margin-bottom:15px;}
+.hbox{background:#FFF0E8;border-radius:10px;padding:11px 13px;margin:10px 0;border-left:3px solid var(--tc);font-size:13px;line-height:1.6;}
+.ig{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--ds);}
+.ig:last-child{border-bottom:none;}
+.ign{width:26px;height:26px;background:var(--tc);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;}
+.kwc{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+.kw{padding:5px 11px;border-radius:17px;border:1px solid var(--lg);font-size:12px;cursor:pointer;background:var(--wm);}
+.kw.sel{background:var(--ch);color:#fff;border-color:var(--ch);}
+.prow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.pc{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.12);cursor:pointer;flex-shrink:0;}
+.empty{text-align:center;padding:32px 16px;color:var(--md);}
+.empty-i{font-size:32px;margin-bottom:9px;}
+/* TOAST */
+#toast{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ch);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:999;white-space:nowrap;pointer-events:none;}
+/* ARCHIVE SECTION */
+.arch-toggle{display:flex;align-items:center;gap:8px;padding:12px 0;cursor:pointer;color:var(--md);font-size:13px;}
+.arch-toggle-arrow{transition:transform .25s;}
+.arch-toggle.open .arch-toggle-arrow{transform:rotate(90deg);}
+#arch-list{display:none;}
+#arch-list.open{display:block;}
+/* ROOM COLORS */
+.rc-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.rc-lbl{font-size:12px;color:var(--md);min-width:75px;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-r">
+    <h1>Кабинет декоратора</h1>
+    <div class="hdr-d" id="hdate"></div>
+  </div>
+</div>
+<div class="nav">
+  <button class="nb on" onclick="go('clients')">👥 Клиенты</button>
+  <button class="nb" onclick="go('finance')">💰 Финансы</button>
+  <button class="nb" onclick="go('templates')">📝 Шаблоны</button>
+  <button class="nb" onclick="go('learn')">📚 Учёба</button>
+  <button class="nb" onclick="go('diary')">📓 Заметки</button>
+</div>
+
+<!-- КЛИЕНТЫ -->
+<div id="scr-clients" class="scr on">
+  <div class="stats">
+    <div class="stat"><div class="sn" id="cl-all">0</div><div class="sl">клиентов</div></div>
+    <div class="stat"><div class="sn" id="cl-act" style="color:var(--tc)">0</div><div class="sl">активных</div></div>
+    <div class="stat"><div class="sn" id="cl-done" style="color:var(--sg)">0</div><div class="sl">готово</div></div>
+  </div>
+  <div class="search-row">
+    <input class="inp" id="cli-search" placeholder="🔍 Поиск по имени..." oninput="renderClients()">
+    <select class="inp sort-btn" id="cli-sort" onchange="renderClients()" style="width:auto;flex-shrink:0;padding:9px 10px">
+      <option value="">Все</option>
+      <option value="new">Новые</option>
+      <option value="active">В работе</option>
+      <option value="done">Готово</option>
+    </select>
+  </div>
+  <button class="btn btc" onclick="openNewClient()">+ Новый клиент</button>
+  <div id="clients-list" style="margin-top:11px"></div>
+  <div class="arch-toggle" id="arch-toggle" onclick="toggleArchive()">
+    <span class="arch-toggle-arrow">▶</span>
+    <span>📦 Архив клиентов (<span id="arch-count">0</span>)</span>
+  </div>
+  <div id="arch-list"></div>
+</div>
+
+<!-- ФИНАНСЫ -->
+<div id="scr-finance" class="scr">
+  <div class="stats">
+    <div class="stat"><div class="sn" id="f-total">0</div><div class="sl">за период</div></div>
+    <div class="stat"><div class="sn" id="f-paid" style="color:var(--sg)">0</div><div class="sl">оплачено</div></div>
+    <div class="stat"><div class="sn" id="f-wait" style="color:var(--tc)">0</div><div class="sl">ожидает</div></div>
+  </div>
+  <div class="card" style="padding:12px 14px;margin-bottom:12px">
+    <div style="font-size:11px;color:var(--md);margin-bottom:5px">Итого за всё время</div>
+    <div style="font-family:Georgia,serif;font-size:24px;font-weight:600;color:var(--ch)" id="f-alltime">0 руб</div>
+  </div>
+  <div class="fmonth-tabs" id="fmonth-tabs"></div>
+  <div id="finance-list"></div>
+</div>
+
+<!-- ШАБЛОНЫ -->
+<div id="scr-templates" class="scr">
+  <div class="card">
+    <div class="ct">📝 Шаблоны</div>
+    <p style="font-size:13px;color:var(--md);line-height:1.5">Нажми ✏️ чтобы открыть и редактировать. Нажми 📋 чтобы скопировать.</p>
+  </div>
+  <div id="templates-list"></div>
+  <button class="btn bch" onclick="openNewTmpl()">+ Добавить шаблон</button>
+</div>
+
+<!-- АУДИТ -->
+<div id="scr-audit" class="scr">
+  <div class="card" style="padding:11px 14px">
+    <div id="apt" style="font-size:12px;color:var(--md);margin-bottom:5px">Выполнено: 0 из 0</div>
+    <div class="pb"><div class="pbf" id="apb" style="width:0%"></div></div>
+  </div>
+  <div class="card"><div id="audit-list"></div></div>
+  <button class="btn bds" onclick="resetAudit()">🔄 Сбросить</button>
+</div>
+
+<!-- УЧЁБА -->
+<div id="scr-learn" class="scr">
+  <div class="stats">
+    <div class="stat"><div class="sn" id="ls-done">0</div><div class="sl">уроков</div></div>
+    <div class="stat"><div class="sn" id="ls-tasks">0</div><div class="sl">заданий</div></div>
+    <div class="stat"><div class="sn" id="ls-pct" style="color:var(--sg)">0%</div><div class="sl">прогресс</div></div>
+  </div>
+  <div class="card" style="padding:11px 14px">
+    <div class="pb"><div class="pbf" id="lpbar" style="width:0%"></div></div>
+  </div>
+  <div id="lessons-wrap"></div>
+</div>
+
+<!-- ДНЕВНИК -->
+<div id="scr-diary" class="scr">
+  <div class="stats">
+    <div class="stat"><div class="sn" id="d-days">0</div><div class="sl">дней</div></div>
+    <div class="stat"><div class="sn" id="d-ent">0</div><div class="sl">записей</div></div>
+    <div class="stat"><div class="sn" id="d-wk" style="color:var(--sg)">1</div><div class="sl">неделя</div></div>
+  </div>
+  <button class="btn btc" onclick="openM('dm')">+ Новая заметка</button>
+  <div id="diary-list" style="margin-top:11px"></div>
+</div>
+
+<!-- ОБНОВЛЕНИЕ -->
+<div id="scr-update" class="scr">
+  <div class="card">
+    <div class="ct">🔄 Как обновить</div>
+    <p style="font-size:13px;color:var(--md);line-height:1.5">Данные хранятся в браузере отдельно — не удалятся при обновлении файла.</p>
+  </div>
+  <div class="card">
+    <div class="ig"><div class="ign">1</div><div style="font-size:13px;line-height:1.5;flex:1">Скачай новый файл из Claude</div></div>
+    <div class="ig"><div class="ign">2</div><div style="font-size:13px;line-height:1.5;flex:1">Удали старый на GitHub (три точки → Delete file)</div></div>
+    <div class="ig"><div class="ign">3</div><div style="font-size:13px;line-height:1.5;flex:1">Открой <strong>github.com/lydiakravtsova/decorator-app/upload/main</strong> → загрузи новый → Commit changes</div></div>
+    <div class="ig"><div class="ign">4</div><div style="font-size:13px;line-height:1.5;flex:1">Подожди 2 мин → обнови страницу 🔄</div></div>
+  </div>
+  <div class="hbox">Ссылка на приложение:<br><strong style="color:var(--tc)">lydiakravtsova.github.io/decorator-app/decorator-v3.html</strong></div>
+</div>
+
+<!-- MODALS -->
+<div class="mbg" id="m-client" onclick="closeMbg(event,'m-client')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt" id="mc-title">Новый клиент</div>
+    <input type="hidden" id="mc-idx" value="-1">
+    <span class="lbl">Имя клиента</span><input class="inp" id="mc-name" placeholder="Анна Иванова">
+    <span class="lbl">Контакт</span><input class="inp" id="mc-contact" placeholder="@username или телефон">
+    <span class="lbl">Тип услуги</span>
+    <select class="inp" id="mc-service">
+      <option>Декорирование с тем, что есть</option><option>Экспресс-аудит</option>
+      <option>Подбор декора и текстиля</option><option>Цветовое решение</option>
+      <option>Аудит дизайн-проекта</option><option>Онлайн-консультация</option>
+      <option>Организация пространства</option><option>Портфолио / бесплатно</option>
+    </select>
+    <span class="lbl">Статус</span>
+    <select class="inp" id="mc-status">
+      <option value="new">Новый</option><option value="active">В работе</option><option value="done">Завершён</option>
+    </select>
+    <span class="lbl">Стоимость (руб)</span><input class="inp" id="mc-price" placeholder="5000" type="number">
+    <span class="lbl">Оплата</span>
+    <select class="inp" id="mc-paid">
+      <option value="no">Не оплачено</option><option value="partial">Частично</option><option value="yes">Оплачено</option>
+    </select>
+    <span class="lbl">Дата работы</span><input class="inp" id="mc-date" type="month">
+    <span class="lbl">Заметки</span><textarea class="inp" id="mc-notes" placeholder="Детали..."></textarea>
+    <button class="btn btc" onclick="saveClient()">Сохранить</button>
+    <button class="btn bds" onclick="closeM('m-client')" style="margin-top:7px">Отмена</button>
+  </div>
+</div>
+
+<div class="mbg" id="m-brief" onclick="closeMbg(event,'m-brief')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt">📋 Бриф</div>
+    <div style="font-size:12px;color:var(--md);margin-bottom:11px" id="brief-cn"></div>
+    <span class="lbl">Тип помещения</span>
+    <select class="inp" id="b-type"><option>Квартира</option><option>Дом</option><option>Офис</option><option>Другое</option></select>
+    <span class="lbl">Площадь</span><input class="inp" id="b-area" placeholder="45 м²">
+    <span class="lbl">Комнаты в работе</span><input class="inp" id="b-rooms" placeholder="Гостиная, спальня">
+    <span class="lbl">Ремонт?</span>
+    <select class="inp" id="b-reno"><option>Нет — работаем с тем, что есть</option><option>Косметический</option><option>Капитальный — идёт</option><option>Планируется</option></select>
+    <span class="lbl">Проблема / что не нравится</span><textarea class="inp" id="b-prob" placeholder="Тёмно, захламлено..."></textarea>
+    <span class="lbl">Желаемый результат</span><textarea class="inp" id="b-res" placeholder="Как должна ощущаться?"></textarea>
+    <span class="lbl">Настроение / атмосфера</span><input class="inp" id="b-mood" placeholder="Тепло, уют, природа...">
+    <span class="lbl">Бюджет</span>
+    <select class="inp" id="b-budget"><option>Без покупок</option><option>До 10 000 руб</option><option>10–30 тыс</option><option>30–100 тыс</option><option>Без ограничений</option></select>
+    <span class="lbl">Дети / животные</span>
+    <select class="inp" id="b-kids"><option>Нет</option><option>Дети</option><option>Животные</option><option>Дети и животные</option></select>
+    <span class="lbl">Сроки</span><input class="inp" id="b-dead" placeholder="Через 2 недели">
+    <span class="lbl">Ссылки на фото до</span><textarea class="inp" id="b-photos" placeholder="Ссылки на фото..."></textarea>
+    <span class="lbl">Дополнительно</span><textarea class="inp" id="b-extra" placeholder="Всё важное..."></textarea>
+    <button class="btn btc" onclick="saveBrief()">💾 Сохранить</button>
+    <button class="btn bsg" id="brief-pdf-btn" onclick="" style="margin-top:7px">📄 PDF</button>
+    <button class="btn bds" onclick="closeM('m-brief')" style="margin-top:7px">Закрыть</button>
+  </div>
+</div>
+
+<div class="mbg" id="m-mood" onclick="closeMbg(event,'m-mood')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt">🎨 Мудборд</div>
+    <div style="font-size:12px;color:var(--md);margin-bottom:11px" id="mood-cn"></div>
+    <span class="lbl">Настроение</span><div class="kwc" id="kwcloud"></div>
+    <span class="lbl">Стиль интерьера</span><div class="kwc" id="style-cloud"></div>
+    <span class="lbl">Материалы</span><div class="kwc" id="mat-cloud"></div>
+    <span class="lbl">Цветовая палитра</span>
+    <p style="font-size:12px;color:var(--md);margin:5px 0 9px">Нажми на цвет — добавится</p>
+    <div id="pal-groups"></div>
+    <span class="lbl">Выбранная палитра</span>
+    <div id="sel-pal" style="display:flex;flex-wrap:wrap;gap:7px;min-height:44px;padding:9px;background:var(--cr);border-radius:9px;border:1px solid var(--lg)">
+      <span style="font-size:12px;color:var(--lg);align-self:center">Нажми на цвета →</span>
+    </div>
+    <span class="lbl">Цвета по помещениям</span>
+    <div style="margin:8px 0">
+      <div class="rc-row"><span class="rc-lbl">Гостиная:</span><input class="inp" id="rc-living" placeholder="Бежевый, терракота..." style="flex:1;margin-top:0"></div>
+      <div class="rc-row"><span class="rc-lbl">Спальня:</span><input class="inp" id="rc-bedroom" placeholder="Тёплый серый..." style="flex:1;margin-top:0"></div>
+      <div class="rc-row"><span class="rc-lbl">Кухня:</span><input class="inp" id="rc-kitchen" placeholder="Белый, дерево..." style="flex:1;margin-top:0"></div>
+      <div class="rc-row"><span class="rc-lbl">Прихожая:</span><input class="inp" id="rc-hall" placeholder="Тёмный, графит..." style="flex:1;margin-top:0"></div>
+      <div class="rc-row"><span class="rc-lbl">Ванная:</span><input class="inp" id="rc-bath" placeholder="Мятный, белый..." style="flex:1;margin-top:0"></div>
+      <div class="rc-row"><span class="rc-lbl">Другое:</span><input class="inp" id="rc-other" placeholder="Кабинет, детская..." style="flex:1;margin-top:0"></div>
+    </div>
+    <span class="lbl">Описание образа</span><textarea class="inp" id="mood-con" placeholder="Тёплое пространство с акцентами из дерева..."></textarea>
+    <span class="lbl">Что НЕ нравится</span><textarea class="inp" id="mood-no" placeholder="Не любит яркие цвета..."></textarea>
+    <span class="lbl">Ссылки на референсы</span><textarea class="inp" id="mood-refs" placeholder="Ссылки на Pinterest..."></textarea>
+    <button class="btn btc" onclick="saveMood()">💾 Сохранить</button>
+    <button class="btn bsg" id="mood-pdf-btn" onclick="" style="margin-top:7px">📄 PDF мудборда</button>
+    <button class="btn bds" onclick="closeM('m-mood')" style="margin-top:7px">Закрыть</button>
+  </div>
+</div>
+
+<div class="mbg" id="m-smeta" onclick="closeMbg(event,'m-smeta')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt">🛒 Смета</div>
+    <div style="font-size:12px;color:var(--md);margin-bottom:11px" id="smeta-cn"></div>
+    <div id="smeta-list"></div>
+    <div style="display:flex;gap:8px;margin-top:11px">
+      <input class="inp" id="si-name" placeholder="Предмет" style="flex:2">
+      <input class="inp" id="si-price" placeholder="Цена" type="number" style="flex:1">
+    </div>
+    <input class="inp" id="si-link" placeholder="Ссылка (необязательно)" style="margin-top:7px">
+    <button class="btn btc" onclick="addSmetaItem()">+ Добавить</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:13px;padding-top:11px;border-top:2px solid var(--ds)">
+      <span style="font-size:13px;font-weight:500">Итого:</span>
+      <span style="font-family:Georgia,serif;font-size:20px;font-weight:600;color:var(--tc)" id="smeta-total">0 руб</span>
+    </div>
+    <button class="btn bsg" id="smeta-pdf-btn" onclick="" style="margin-top:10px">📄 PDF сметы</button>
+    <button class="btn bds" onclick="closeM('m-smeta')" style="margin-top:7px">Закрыть</button>
+  </div>
+</div>
+
+<div class="mbg" id="m-audit-c" onclick="closeMbg(event,'m-audit-c')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt">✅ Аудит</div>
+    <div style="font-size:12px;color:var(--md);margin-bottom:6px" id="audit-cn"></div>
+    <div id="apt2" style="font-size:12px;color:var(--md);margin-bottom:5px">Выполнено: 0 из 0</div>
+    <div class="pb" style="margin-bottom:11px"><div class="pbf" id="apb2" style="width:0%"></div></div>
+    <div id="audit-list2"></div>
+    <span class="lbl">Заметки по аудиту</span>
+    <textarea class="inp" id="audit-notes" placeholder="Ключевые наблюдения..."></textarea>
+    <button class="btn btc" onclick="saveAuditClient()">💾 Сохранить</button>
+    <button class="btn bsg" id="audit-pdf-btn" onclick="" style="margin-top:7px">📄 PDF аудита</button>
+    <button class="btn bds" onclick="closeM('m-audit-c')" style="margin-top:7px">Закрыть</button>
+  </div>
+</div>
+
+<div class="mbg" id="dm" onclick="closeMbg(event,'dm')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt">Новая заметка</div>
+    <span class="lbl">Тема</span>
+    <select class="inp" id="d-topic">
+      <option>Принципы дизайна</option><option>Цвет и палитры</option><option>Текстиль и материалы</option>
+      <option>Свет</option><option>Работа с клиентом</option><option>Разбор интерьера</option>
+      <option>Практика — свой проект</option><option>Практика — клиент</option>
+      <option>Насмотренность</option><option>Блог</option><option>Другое</option>
+    </select>
+    <span class="lbl">Что изучила / сделала</span>
+    <textarea class="inp" id="d-text" placeholder="Разобрала принцип баланса..."></textarea>
+    <span class="lbl">Главный инсайт</span>
+    <input class="inp" id="d-ins" placeholder="Ковёр должен быть больше!">
+    <button class="btn btc" onclick="saveDiary()">Сохранить</button>
+    <button class="btn bds" onclick="closeM('dm')" style="margin-top:7px">Отмена</button>
+  </div>
+</div>
+
+<div class="mbg" id="m-tmpl" onclick="closeMbg(event,'m-tmpl')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt" id="tmpl-title">Новый шаблон</div>
+    <input type="hidden" id="tmpl-edit-idx" value="-1">
+    <span class="lbl">Название</span>
+    <input class="inp" id="tmpl-name" placeholder="Рекомендации после аудита">
+    <span class="lbl">Текст шаблона</span>
+    <textarea class="inp" id="tmpl-text" placeholder="Добрый день!..." style="min-height:150px"></textarea>
+    <button class="btn btc" id="tmpl-save-btn" onclick="saveTmpl()">Сохранить</button>
+    <button class="btn btc" id="tmpl-copy-btn" onclick="copyFromModal()" style="margin-top:7px">📋 Скопировать</button>
+    <button class="btn bds" onclick="closeM('m-tmpl')" style="margin-top:7px">Закрыть</button>
+  </div>
+</div>
+
+<div id="toast">✅ Готово!</div>
+
+<script>
+var KEY = 'deco-v5';
+var S = {};
+var curIdx = -1;
+var curPal = [];
+var curKw = [];
+var curStyles = [];
+var curMats = [];
+var fMonthFilter = 'all';
+
+function loadS() {
+  try { S = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { S = {}; }
+  if (!S.clients) S.clients = [];
+  if (!S.archived) S.archived = [];
+  if (!S.entries) S.entries = [];
+  if (!S.auditChecks) S.auditChecks = {};
+  if (!S.tasksDone) S.tasksDone = {};
+  if (!S.quizAnswers) S.quizAnswers = {};
+  if (!S.templates) S.templates = [];
+}
+function sv() { localStorage.setItem(KEY, JSON.stringify(S)); }
+loadS();
+
+var now = new Date();
+var todayStr = now.toLocaleDateString('ru-RU', {day:'numeric', month:'long'});
+document.getElementById('hdate').innerHTML = now.toLocaleDateString('ru-RU', {weekday:'short', day:'numeric', month:'long'}) + '<br>' + now.getFullYear();
+
+var SCRMAP = {clients:0, finance:1, templates:2, learn:3, diary:4};
+function go(n) {
+  var ss = document.querySelectorAll('.scr');
+  for (var i=0;i<ss.length;i++) ss[i].classList.remove('on');
+  var bb = document.querySelectorAll('.nb');
+  for (var i=0;i<bb.length;i++) bb[i].classList.remove('on');
+  document.getElementById('scr-'+n).classList.add('on');
+  if (bb[SCRMAP[n]]) bb[SCRMAP[n]].classList.add('on');
+}
+function openM(id) { document.getElementById(id).classList.add('op'); }
+function closeM(id) { document.getElementById(id).classList.remove('op'); }
+function closeMbg(e,id) { if (e.target===document.getElementById(id)) closeM(id); }
+function el(id) { return document.getElementById(id); }
+function nl(s) { return (s||'').replace(/\n/g,'<br>'); }
+function fmtDate() { return now.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}); }
+function fmtToday() { return now.toLocaleDateString('ru-RU'); }
+
+function showToast(msg) {
+  var t = el('toast');
+  t.textContent = msg || '✅ Готово!';
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display='none'; }, 2200);
+}
+
+var SL = {new:'Новый', active:'В работе', done:'Завершён'};
+var SC = {new:'s-new', active:'s-active', done:'s-done'};
+
+// ═══ CLIENTS ═══
+function renderClients() {
+  var list = el('clients-list');
+  var archList = el('arch-list');
+  var q = (el('cli-search').value || '').toLowerCase();
+  var sortVal = el('cli-sort').value;
+
+  var active = S.clients.filter(function(c) {
+    if (q && c.name.toLowerCase().indexOf(q) < 0) return false;
+    if (sortVal && c.status !== sortVal) return false;
+    return true;
+  });
+  var archived = S.archived || [];
+
+  el('cl-all').textContent = S.clients.length;
+  el('cl-act').textContent = S.clients.filter(function(c){return c.status==='active';}).length;
+  el('cl-done').textContent = S.clients.filter(function(c){return c.status==='done';}).length;
+  el('arch-count').textContent = archived.length;
+
+  if (!active.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-i">👥</div><p style="font-size:13px">' + (q||sortVal ? 'Ничего не найдено' : 'Нажми + Новый клиент') + '</p></div>';
+  } else {
+    list.innerHTML = '';
+    active.forEach(function(c) {
+      var idx = S.clients.indexOf(c);
+      list.appendChild(buildClientCard(c, idx, false));
+    });
+  }
+
+  // Archived
+  archList.innerHTML = '';
+  archived.forEach(function(c, i) {
+    archList.appendChild(buildClientCard(c, i, true));
+  });
+}
+
+function buildClientCard(c, idx, isArchived) {
+  var tab = c._tab || 'brief';
+  var hB = !!(c.brief && c.brief.bArea);
+  var hM = !!(c.mood && c.mood.concept);
+  var hA = !!(c.auditChecks && Object.keys(c.auditChecks).length);
+  var hS = !!(c.smeta && c.smeta.length);
+  var prog = parseInt(c.progress) || 0;
+
+  var card = document.createElement('div');
+  card.className = 'ccard' + (isArchived ? ' archived' : '');
+
+  // HEAD
+  var head = document.createElement('div'); head.className = 'chead';
+  var nm = document.createElement('div'); nm.className = 'cname'; nm.textContent = c.name;
+  var badge = document.createElement('span');
+  badge.className = 'sbadge ' + (SC[c.status]||'s-new');
+  badge.textContent = SL[c.status]||'';
+  head.appendChild(nm); head.appendChild(badge);
+  card.appendChild(head);
+
+  // INFO
+  var paidTxt = c.paid==='yes'?'✓ оплачено':c.paid==='partial'?'~ частично':'ожидает';
+  var paidColor = c.paid==='yes'?'var(--gn)':c.paid==='partial'?'var(--gd)':'var(--tc)';
+  var info = document.createElement('div'); info.className = 'cinfo';
+  info.innerHTML = (c.contact?'📞 '+c.contact+'<br>':'')+'🛠 '+c.service+(c.price?' · 💰 '+c.price+' руб':'')+' · <span style="color:'+paidColor+'">'+paidTxt+'</span>';
+  card.appendChild(info);
+
+  if (isArchived) {
+    var arow = document.createElement('div'); arow.className = 'crow'; arow.style.padding = '0 14px 14px';
+    var restBtn = document.createElement('button');
+    restBtn.style.cssText = 'background:var(--sg);color:#fff';
+    restBtn.textContent = '↩️ Восстановить';
+    restBtn.setAttribute('data-action','restore'); restBtn.setAttribute('data-idx',idx);
+    var permDelBtn = document.createElement('button');
+    permDelBtn.style.cssText = 'background:#FFF0E8;color:var(--tc)';
+    permDelBtn.textContent = '🗑 Удалить навсегда';
+    permDelBtn.setAttribute('data-action','permdelete'); permDelBtn.setAttribute('data-idx',idx);
+    arow.appendChild(restBtn); arow.appendChild(permDelBtn);
+    card.appendChild(arow);
+    // wrap archived too
+    var wrapA = document.createElement('div'); wrapA.className = 'ccard-wrap';
+    wrapA.appendChild(card); return wrapA;
+  }
+
+  // TABS
+  var tabs = document.createElement('div'); tabs.className = 'ctabs';
+  var tabDefs = [{id:'brief',icon:'📋',has:hB},{id:'mood',icon:'🎨',has:hM},{id:'audit',icon:'✅',has:hA},{id:'smeta',icon:'🛒',has:hS},{id:'proj',icon:'⚙️',has:false}];
+  tabDefs.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.className = 'ctp' + (tab===t.id?' on':'');
+    btn.textContent = t.icon + (t.has?' ✓':'');
+    btn.setAttribute('data-action','tab'); btn.setAttribute('data-idx',idx); btn.setAttribute('data-tab',t.id);
+    tabs.appendChild(btn);
+  });
+  card.appendChild(tabs);
+
+  // BRIEF PANEL
+  var pB = buildPanel(tab==='brief');
+  var bInfo = document.createElement('div');
+  bInfo.style.cssText='font-size:12px;color:var(--md);padding:4px 0 6px;line-height:1.6';
+  bInfo.textContent = hB ? (c.brief.bType||'')+(c.brief.bArea?' · '+c.brief.bArea:'') : 'Бриф не заполнен';
+  pB.appendChild(bInfo);
+  var bRow = document.createElement('div'); bRow.className = 'crow';
+  var bEdit = document.createElement('button');
+  bEdit.style.cssText='background:var(--tc);color:#fff';
+  bEdit.textContent = '✏️ '+(hB?'Ред.':'Заполнить');
+  bEdit.setAttribute('data-action','opbrief'); bEdit.setAttribute('data-idx',idx);
+  bRow.appendChild(bEdit);
+  if (hB) {
+    var bPdf = document.createElement('button');
+    bPdf.style.cssText='background:var(--ds);color:var(--ch)';
+    bPdf.textContent='📄 PDF';
+    bPdf.setAttribute('data-action','pdfbrief'); bPdf.setAttribute('data-idx',idx);
+    bRow.appendChild(bPdf);
+  }
+  pB.appendChild(bRow); card.appendChild(pB);
+
+  // MOOD PANEL
+  var pM = buildPanel(tab==='mood');
+  var mInfo = document.createElement('div');
+  mInfo.style.cssText='font-size:12px;color:var(--md);padding:4px 0 6px';
+  mInfo.textContent = hM ? (c.mood.keywords||[]).slice(0,3).join(', ') : 'Мудборд не создан';
+  pM.appendChild(mInfo);
+  var mRow = document.createElement('div'); mRow.className='crow';
+  var mEdit=document.createElement('button');
+  mEdit.style.cssText='background:var(--sg);color:#fff';
+  mEdit.textContent='✏️ '+(hM?'Ред.':'Создать');
+  mEdit.setAttribute('data-action','opmood'); mEdit.setAttribute('data-idx',idx);
+  mRow.appendChild(mEdit);
+  if (hM) {
+    var mPdf=document.createElement('button');
+    mPdf.style.cssText='background:var(--ds);color:var(--ch)';
+    mPdf.textContent='📄 PDF';
+    mPdf.setAttribute('data-action','pdfmood'); mPdf.setAttribute('data-idx',idx);
+    mRow.appendChild(mPdf);
+  }
+  pM.appendChild(mRow); card.appendChild(pM);
+
+  // AUDIT PANEL
+  var pA = buildPanel(tab==='audit');
+  var aInfo=document.createElement('div');
+  aInfo.style.cssText='font-size:12px;color:var(--md);padding:4px 0 6px';
+  aInfo.textContent=hA?'Аудит проведён':'Аудит не проведён';
+  pA.appendChild(aInfo);
+  var aRow=document.createElement('div'); aRow.className='crow';
+  var aEdit=document.createElement('button');
+  aEdit.style.cssText='background:var(--ch);color:#fff';
+  aEdit.textContent='✏️ '+(hA?'Ред.':'Провести');
+  aEdit.setAttribute('data-action','opaudit'); aEdit.setAttribute('data-idx',idx);
+  aRow.appendChild(aEdit);
+  if (hA) {
+    var aPdf=document.createElement('button');
+    aPdf.style.cssText='background:var(--ds);color:var(--ch)';
+    aPdf.textContent='📄 PDF';
+    aPdf.setAttribute('data-action','pdfaudit'); aPdf.setAttribute('data-idx',idx);
+    aRow.appendChild(aPdf);
+  }
+  pA.appendChild(aRow); card.appendChild(pA);
+
+  // SMETA PANEL
+  var pS = buildPanel(tab==='smeta');
+  var sInfo=document.createElement('div');
+  sInfo.style.cssText='font-size:12px;color:var(--md);padding:4px 0 6px';
+  if (hS) {
+    var sT=c.smeta.reduce(function(a,x){return a+(parseFloat(x.price)||0);},0);
+    sInfo.textContent=c.smeta.length+' позиций · '+sT.toLocaleString('ru')+' руб';
+  } else { sInfo.textContent='Смета не заполнена'; }
+  pS.appendChild(sInfo);
+  var sRow=document.createElement('div'); sRow.className='crow';
+  var sEdit=document.createElement('button');
+  sEdit.style.cssText='background:var(--gd);color:#fff';
+  sEdit.textContent='✏️ '+(hS?'Ред.':'Создать');
+  sEdit.setAttribute('data-action','opsmeta'); sEdit.setAttribute('data-idx',idx);
+  sRow.appendChild(sEdit);
+  if (hS) {
+    var sPdf=document.createElement('button');
+    sPdf.style.cssText='background:var(--ds);color:var(--ch)';
+    sPdf.textContent='📄 PDF';
+    sPdf.setAttribute('data-action','pdfsmeta'); sPdf.setAttribute('data-idx',idx);
+    sRow.appendChild(sPdf);
+  }
+  pS.appendChild(sRow); card.appendChild(pS);
+
+  // PROJ PANEL
+  var pP = buildPanel(tab==='proj');
+  var plbl=document.createElement('div');
+  plbl.style.cssText='font-size:11px;font-weight:500;color:var(--md);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px';
+  plbl.textContent='Прогресс %';
+  pP.appendChild(plbl);
+  var pInp=document.createElement('input');
+  pInp.className='inp'; pInp.type='number'; pInp.min='0'; pInp.max='100'; pInp.value=prog;
+  pInp.setAttribute('data-action','progress'); pInp.setAttribute('data-idx',idx);
+  pP.appendChild(pInp);
+  var pbDiv=document.createElement('div'); pbDiv.className='pb'; pbDiv.style.marginTop='7px';
+  var pbF=document.createElement('div'); pbF.className='pbf'; pbF.style.width=prog+'%';
+  pbDiv.appendChild(pbF); pP.appendChild(pbDiv);
+  var pRow=document.createElement('div'); pRow.className='crow'; pRow.style.marginTop='9px';
+  var edBtn=document.createElement('button');
+  edBtn.style.cssText='background:var(--ds);color:var(--ch)';
+  edBtn.textContent='✏️ Ред.';
+  edBtn.setAttribute('data-action','edit'); edBtn.setAttribute('data-idx',idx);
+  var fullBtn=document.createElement('button');
+  fullBtn.style.cssText='background:var(--gd);color:#fff';
+  fullBtn.textContent='📄 PDF';
+  fullBtn.setAttribute('data-action','full'); fullBtn.setAttribute('data-idx',idx);
+  var archBtn=document.createElement('button');
+  archBtn.style.cssText='background:#FFF8E8;color:var(--gd)';
+  archBtn.textContent='📦 Архив';
+  archBtn.setAttribute('data-action','archive'); archBtn.setAttribute('data-idx',idx);
+  var delBtn=document.createElement('button');
+  delBtn.style.cssText='background:#FFF0E8;color:var(--tc)';
+  delBtn.textContent='🗑 Удалить';
+  delBtn.setAttribute('data-action','delete'); delBtn.setAttribute('data-idx',idx);
+  pRow.appendChild(edBtn); pRow.appendChild(fullBtn);
+  pP.appendChild(pRow);
+  card.appendChild(pP);
+
+  // Swipe wrapper
+  var wrap = document.createElement('div'); wrap.className = 'ccard-wrap';
+  var actions = document.createElement('div'); actions.className = 'ccard-actions';
+  var archA = document.createElement('button'); archA.className = 'act-arch';
+  archA.innerHTML = '📦<br>Архив';
+  archA.setAttribute('data-action','archive'); archA.setAttribute('data-idx',idx);
+  var delA = document.createElement('button'); delA.className = 'act-del';
+  delA.innerHTML = '🗑<br>Удалить';
+  delA.setAttribute('data-action','delete'); delA.setAttribute('data-idx',idx);
+  actions.appendChild(archA); actions.appendChild(delA);
+  wrap.appendChild(actions); wrap.appendChild(card);
+  addSwipe(card, wrap);
+  return wrap;
+}
+
+function addSwipe(card, wrap) {
+  var startX = 0; var startY = 0; var currentX = 0; var swiping = false; var revealed = false;
+  var actionsEl = wrap.querySelector('.ccard-actions');
+  var actW = 0;
+  card.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    actW = actionsEl.offsetWidth || 130;
+    swiping = false;
+  }, {passive:true});
+  card.addEventListener('touchmove', function(e) {
+    var dx = e.touches[0].clientX - startX;
+    var dy = e.touches[0].clientY - startY;
+    if (!swiping && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+    swiping = true;
+    if (Math.abs(dy) > Math.abs(dx)) return;
+    e.preventDefault();
+    var base = revealed ? -actW : 0;
+    currentX = Math.min(0, Math.max(-actW, base + dx));
+    card.style.transform = 'translateX(' + currentX + 'px)';
+    actionsEl.style.transform = 'translateX(' + (100 + (currentX/actW)*100) + '%)';
+  }, {passive:false});
+  card.addEventListener('touchend', function() {
+    if (!swiping) return;
+    if (currentX < -actW/2) {
+      card.style.transform = 'translateX(-' + actW + 'px)';
+      actionsEl.style.transform = 'translateX(0%)';
+      revealed = true;
+    } else {
+      card.style.transform = 'translateX(0)';
+      actionsEl.style.transform = 'translateX(100%)';
+      revealed = false;
+    }
+  });
+}
+
+function buildPanel(isOn) {
+  var p = document.createElement('div');
+  p.className = 'cpanel' + (isOn?' on':'');
+  return p;
+}
+
+function switchTab(i, tab) { S.clients[i]._tab=tab; sv(); renderClients(); }
+
+// DELEGATED EVENT HANDLER - handles all dynamic buttons
+document.addEventListener('click', function(e) {
+  var btn = e.target;
+  var action = btn.getAttribute ? btn.getAttribute('data-action') : null;
+  if (!action) return;
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  if (action === 'tab') { var tab = btn.getAttribute('data-tab'); switchTab(idx, tab); return; }
+  if (action === 'opbrief') { openBrief(idx); return; }
+  if (action === 'pdfbrief') { exportBriefFor(idx); return; }
+  if (action === 'opmood') { openMood(idx); return; }
+  if (action === 'pdfmood') { exportMoodFor(idx); return; }
+  if (action === 'opaudit') { openAuditClient(idx); return; }
+  if (action === 'pdfaudit') { exportAuditFor(idx); return; }
+  if (action === 'opsmeta') { openSmeta(idx); return; }
+  if (action === 'pdfsmeta') { exportSmetaFor(idx); return; }
+  if (action === 'edit') { editClient(idx); return; }
+  if (action === 'full') { exportFull(idx); return; }
+  if (action === 'archive') { archiveClient(idx); return; }
+  if (action === 'delete') {
+    if (!confirm('Удалить клиента и все его данные навсегда?')) return;
+    S.clients.splice(idx, 1); sv(); renderClients(); renderFinance();
+    showToast('🗑 Клиент удалён');
+    return;
+  }
+  if (action === 'restore') { restoreClient(idx); return; }
+  if (action === 'permdelete') { deleteForever(idx); return; }
+  if (action === 'progress') { S.clients[idx].progress = btn.value; sv(); return; }
+});
+
+document.addEventListener('input', function(e) {
+  var inp = e.target;
+  if (inp.getAttribute && inp.getAttribute('data-action') === 'progress') {
+    var idx = parseInt(inp.getAttribute('data-idx'));
+    S.clients[idx].progress = inp.value; sv();
+  }
+});
+
+function archiveClient(i) {
+  if (!confirm('Переместить в архив? Клиент останется в финансах.')) return;
+  var c = S.clients.splice(i, 1)[0];
+  c.archived = true;
+  S.archived.push(c);
+  sv(); renderClients(); renderFinance();
+  showToast('📦 Перемещено в архив');
+}
+function restoreClient(i) {
+  var c = S.archived.splice(i, 1)[0];
+  c.archived = false;
+  S.clients.push(c);
+  sv(); renderClients(); renderFinance();
+  showToast('✅ Клиент восстановлен');
+}
+function deleteForever(i) {
+  if (!confirm('Удалить навсегда? Это действие нельзя отменить.')) return;
+  S.archived.splice(i, 1);
+  sv(); renderClients();
+  showToast('🗑 Удалено навсегда');
+}
+function toggleArchive() {
+  var t = el('arch-toggle'); var l = el('arch-list');
+  t.classList.toggle('open'); l.classList.toggle('open');
+}
+
+function openNewClient() {
+  el('mc-title').textContent='Новый клиент'; el('mc-idx').value='-1';
+  ['mc-name','mc-contact','mc-price','mc-notes'].forEach(function(f){el(f).value='';});
+  el('mc-status').value='new'; el('mc-paid').value='no';
+  el('mc-date').value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  openM('m-client');
+}
+function editClient(i) {
+  var c=S.clients[i];
+  el('mc-title').textContent='Редактировать'; el('mc-idx').value=i;
+  el('mc-name').value=c.name||''; el('mc-contact').value=c.contact||'';
+  el('mc-service').value=c.service||''; el('mc-status').value=c.status||'new';
+  el('mc-price').value=c.price||''; el('mc-paid').value=c.paid||'no';
+  el('mc-date').value=c.date||''; el('mc-notes').value=c.notes||'';
+  openM('m-client');
+}
+function saveClient() {
+  var name=el('mc-name').value.trim();
+  if (!name) { showToast('❌ Введи имя клиента'); return; }
+  var idx=parseInt(el('mc-idx').value);
+  var obj={name:name, contact:el('mc-contact').value, service:el('mc-service').value,
+    status:el('mc-status').value, price:el('mc-price').value, paid:el('mc-paid').value,
+    date:el('mc-date').value, notes:el('mc-notes').value, progress:'0', _tab:'brief'};
+  if (idx>=0) {
+    obj.brief=S.clients[idx].brief; obj.mood=S.clients[idx].mood;
+    obj.smeta=S.clients[idx].smeta; obj.auditChecks=S.clients[idx].auditChecks;
+    obj.auditNotes=S.clients[idx].auditNotes; obj.progress=S.clients[idx].progress||'0';
+    obj._tab=S.clients[idx]._tab||'brief'; S.clients[idx]=obj;
+  } else { S.clients.push(obj); }
+  sv(); renderClients(); renderFinance(); closeM('m-client');
+  showToast('✅ Клиент сохранён');
+}
+
+// BRIEF
+function openBrief(i) {
+  curIdx=i;
+  var c=S.clients[i]; el('brief-cn').textContent='Клиент: '+c.name;
+  var b=c.brief||{};
+  el('b-type').value=b.bType||'Квартира'; el('b-area').value=b.bArea||'';
+  el('b-rooms').value=b.bRooms||''; el('b-reno').value=b.bReno||'Нет — работаем с тем, что есть';
+  el('b-prob').value=b.bProb||''; el('b-res').value=b.bRes||'';
+  el('b-mood').value=b.bMood||''; el('b-budget').value=b.bBudget||'Без покупок';
+  el('b-kids').value=b.bKids||'Нет'; el('b-dead').value=b.bDead||'';
+  el('b-photos').value=b.bPhotos||''; el('b-extra').value=b.bExtra||'';
+  el('brief-pdf-btn').onclick=function(){ exportBriefFor(curIdx); };
+  openM('m-brief');
+}
+function saveBrief() {
+  if (curIdx<0) return;
+  S.clients[curIdx].brief={bType:el('b-type').value,bArea:el('b-area').value,bRooms:el('b-rooms').value,
+    bReno:el('b-reno').value,bProb:el('b-prob').value,bRes:el('b-res').value,bMood:el('b-mood').value,
+    bBudget:el('b-budget').value,bKids:el('b-kids').value,bDead:el('b-dead').value,
+    bPhotos:el('b-photos').value,bExtra:el('b-extra').value};
+  sv(); renderClients(); showToast('✅ Бриф сохранён');
+}
+
+// MOOD
+var PALG=[
+  {g:'Нейтральные',c:[{h:'#F5F0E8',n:'Крем'},{h:'#D4C5A9',n:'Льняной'},{h:'#A89880',n:'Песок'},{h:'#6B5B45',n:'Какао'},{h:'#2C2C2C',n:'Уголь'},{h:'#FFFFFF',n:'Белый'}]},
+  {g:'Тёплые',c:[{h:'#C4714A',n:'Терракота'},{h:'#E8956D',n:'Персик'},{h:'#B8963E',n:'Золото'},{h:'#D4763B',n:'Охра'},{h:'#8B4513',n:'Кирпич'},{h:'#E8C57A',n:'Пшеница'}]},
+  {g:'Природные',c:[{h:'#7A8C6E',n:'Шалфей'},{h:'#4A7C5F',n:'Еловый'},{h:'#8FA8A0',n:'Мятный'},{h:'#6B8CAE',n:'Голубой'},{h:'#4A5568',n:'Сланец'},{h:'#9B7FA8',n:'Лаванда'}]}
+];
+var KWS=['уют','свет','природа','минимализм','тепло','простор','роскошь','эклектика','ретро','скандинавия','бохо','japandi','арт-деко','индустриал'];
+var STYLES=['Скандинавский','Japandi','Бохо','Эклектика','Контемпорари','Минимализм','Арт-деко','Прованс','Лофт','Классика','Средиземноморский','Эко'];
+var MATS=['Дерево','Лён','Бархат','Хлопок','Шерсть','Бетон','Металл','Мрамор','Ротанг','Керамика','Стекло','Кожа','Джут','Терракота'];
+
+function renderPalG() {
+  var wrap=el('pal-groups'); wrap.innerHTML='';
+  PALG.forEach(function(g) {
+    var lbl=document.createElement('div');
+    lbl.style.cssText='font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--md);margin-bottom:6px';
+    lbl.textContent=g.g; wrap.appendChild(lbl);
+    var row=document.createElement('div'); row.className='prow';
+    g.c.forEach(function(c) {
+      var chip=document.createElement('div'); chip.className='pc';
+      chip.style.background=c.h;
+      if (c.h==='#FFFFFF') chip.style.border='2px solid var(--lg)';
+      chip.title=c.n;
+      chip.onclick=(function(ch,cn){ return function(){ addPal(ch,cn); }; })(c.h,c.n);
+      row.appendChild(chip);
+    });
+    wrap.appendChild(row);
+  });
+}
+function mkKwCloud(wrapId, arr, selected, toggleFn) {
+  var wrap=el(wrapId); if (!wrap) return; wrap.innerHTML='';
+  arr.forEach(function(k) {
+    var s=document.createElement('span');
+    s.className='kw'+(selected.indexOf(k)>=0?' sel':'');
+    s.textContent=k;
+    s.onclick=(function(kk){ return function(){ toggleFn(kk); }; })(k);
+    wrap.appendChild(s);
+  });
+}
+function toggleKw(k){ var i=curKw.indexOf(k); if(i>=0) curKw.splice(i,1); else curKw.push(k); mkKwCloud('kwcloud',KWS,curKw,toggleKw); }
+function toggleStyle(k){ var i=curStyles.indexOf(k); if(i>=0) curStyles.splice(i,1); else curStyles.push(k); mkKwCloud('style-cloud',STYLES,curStyles,toggleStyle); }
+function toggleMat(k){ var i=curMats.indexOf(k); if(i>=0) curMats.splice(i,1); else curMats.push(k); mkKwCloud('mat-cloud',MATS,curMats,toggleMat); }
+
+function renderSelPal() {
+  var wrap=el('sel-pal'); wrap.innerHTML='';
+  if (!curPal.length) { wrap.innerHTML='<span style="font-size:12px;color:var(--lg);align-self:center">Нажми на цвета →</span>'; return; }
+  curPal.forEach(function(p,i) {
+    var div=document.createElement('div'); div.style.cssText='text-align:center;cursor:pointer';
+    div.onclick=(function(ii){ return function(){ curPal.splice(ii,1); renderSelPal(); }; })(i);
+    var circ=document.createElement('div');
+    circ.style.cssText='width:34px;height:34px;background:'+p.h+';border-radius:50%;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.12);margin:0 auto 2px';
+    var nm=document.createElement('div'); nm.style.cssText='font-size:10px;color:var(--md)'; nm.textContent=p.n;
+    div.appendChild(circ); div.appendChild(nm); wrap.appendChild(div);
+  });
+}
+function addPal(h,n) { for(var i=0;i<curPal.length;i++){if(curPal[i].h===h)return;} curPal.push({h:h,n:n}); renderSelPal(); }
+
+function openMood(i) {
+  curIdx=i;
+  var c=S.clients[i]; var m=c.mood||{};
+  el('mood-cn').textContent='Клиент: '+c.name;
+  curPal=m.palette?JSON.parse(JSON.stringify(m.palette)):[];
+  curKw=m.keywords?m.keywords.slice():[];
+  curStyles=m.styles?m.styles.slice():[];
+  curMats=m.mats?m.mats.slice():[];
+  el('mood-con').value=m.concept||''; el('mood-no').value=m.noLike||''; el('mood-refs').value=m.refs||'';
+  el('rc-living').value=m.rcLiving||''; el('rc-bedroom').value=m.rcBedroom||'';
+  el('rc-kitchen').value=m.rcKitchen||''; el('rc-hall').value=m.rcHall||'';
+  el('rc-bath').value=m.rcBath||''; el('rc-other').value=m.rcOther||'';
+  mkKwCloud('kwcloud',KWS,curKw,toggleKw);
+  mkKwCloud('style-cloud',STYLES,curStyles,toggleStyle);
+  mkKwCloud('mat-cloud',MATS,curMats,toggleMat);
+  renderSelPal();
+  el('mood-pdf-btn').onclick=function(){ exportMoodFor(curIdx); };
+  openM('m-mood');
+}
+function saveMood() {
+  if (curIdx<0) return;
+  S.clients[curIdx].mood={keywords:curKw.slice(),palette:JSON.parse(JSON.stringify(curPal)),
+    styles:curStyles.slice(),mats:curMats.slice(),concept:el('mood-con').value,
+    noLike:el('mood-no').value,refs:el('mood-refs').value,
+    rcLiving:el('rc-living').value,rcBedroom:el('rc-bedroom').value,
+    rcKitchen:el('rc-kitchen').value,rcHall:el('rc-hall').value,
+    rcBath:el('rc-bath').value,rcOther:el('rc-other').value};
+  sv(); renderClients(); showToast('✅ Мудборд сохранён');
+}
+
+// SMETA
+function openSmeta(i) {
+  curIdx=i; var c=S.clients[i];
+  el('smeta-cn').textContent='Клиент: '+c.name;
+  renderSmetaList(c.smeta||[]);
+  el('smeta-pdf-btn').onclick=function(){ exportSmetaFor(curIdx); };
+  openM('m-smeta');
+}
+function renderSmetaList(items) {
+  var wrap=el('smeta-list');
+  if (!items.length) { wrap.innerHTML='<div style="font-size:13px;color:var(--md);padding:8px 0">Добавь первый предмет</div>'; el('smeta-total').textContent='0 руб'; return; }
+  wrap.innerHTML='';
+  var total=0;
+  items.forEach(function(it,i) {
+    total+=parseFloat(it.price)||0;
+    var row=document.createElement('div'); row.className='sitem';
+    var nm=document.createElement('div'); nm.style.flex='1';
+    nm.innerHTML='<div style="font-size:13px">'+it.name+'</div>'+(it.link?'<a href="'+it.link+'" target="_blank" style="font-size:11px;color:var(--tc)">🔗</a>':'');
+    var pr=document.createElement('div');
+    pr.style.cssText='font-size:13px;font-weight:500;color:var(--tc);min-width:70px;text-align:right';
+    pr.textContent=(parseFloat(it.price)||0).toLocaleString('ru')+' руб';
+    var del=document.createElement('button');
+    del.style.cssText='background:none;border:none;color:var(--lg);font-size:16px;cursor:pointer';
+    del.textContent='×';
+    del.onclick=(function(ii){ return function(){ delSmetaItem(ii); }; })(i);
+    row.appendChild(nm); row.appendChild(pr); row.appendChild(del); wrap.appendChild(row);
+  });
+  el('smeta-total').textContent=total.toLocaleString('ru')+' руб';
+}
+function addSmetaItem() {
+  if (curIdx<0) return;
+  var name=el('si-name').value.trim(); var price=el('si-price').value;
+  if (!name||!price) { showToast('❌ Введи название и цену'); return; }
+  if (!S.clients[curIdx].smeta) S.clients[curIdx].smeta=[];
+  S.clients[curIdx].smeta.push({name:name,price:price,link:el('si-link').value});
+  sv(); renderSmetaList(S.clients[curIdx].smeta); renderClients();
+  el('si-name').value=''; el('si-price').value=''; el('si-link').value='';
+}
+function delSmetaItem(i) {
+  if (curIdx<0) return;
+  S.clients[curIdx].smeta.splice(i,1);
+  sv(); renderSmetaList(S.clients[curIdx].smeta); renderClients();
+}
+
+// AUDIT CLIENT
+var AITEMS=[
+  {s:'📸 Фиксация'},
+  {t:'Сфотографировать каждый угол',sub:'Общий план + детали'},{t:'Замерить комнату',sub:'Длина × ширина × высота'},
+  {t:'Отметить окна и сторону света'},{t:'Зафиксировать розетки'},
+  {s:'💡 Освещение'},
+  {t:'Сколько источников света?',sub:'Минимум 3 на разной высоте'},{t:'Есть рабочий и акцентный?'},{t:'Как меняется в течение дня?'},
+  {s:'🪑 Мебель'},
+  {t:'Удобен маршрут движения?'},{t:'Мебель по масштабу комнаты?'},{t:'Можно переставить?'},{t:'Хватает хранения?'},
+  {s:'🎨 Цвет'},
+  {t:'Основной цвет стен и пола?'},{t:'Что выбивается из гаммы?'},{t:'Есть акцентный цвет?'},
+  {s:'🧺 Текстиль'},
+  {t:'Ковёр — правильный размер?'},{t:'Шторы — до пола?'},{t:'Подушки, пледы — есть?'},
+  {s:'🌿 Декор'},
+  {t:'Есть фокусная точка?'},{t:'Есть растения?'},{t:'Есть визуальный шум?'},{t:'Открытые полки — как организованы?'},
+  {s:'🔧 Функция'},
+  {t:'Клиенту удобно?'},{t:'Что раздражает в быту?'},{t:'Есть мёртвые зоны?'}
+];
+
+function openAuditClient(i) {
+  curIdx=i; var c=S.clients[i];
+  el('audit-cn').textContent='Клиент: '+c.name;
+  el('audit-notes').value=c.auditNotes||'';
+  renderAuditClient(c.auditChecks||{});
+  el('audit-pdf-btn').onclick=function(){ exportAuditFor(curIdx); };
+  openM('m-audit-c');
+}
+function renderAuditClient(checks) {
+  var wrap=el('audit-list2'); wrap.innerHTML='';
+  var total=0, done=0;
+  AITEMS.forEach(function(item,i) {
+    if (item.s) { var s=document.createElement('div');s.className='sec';s.textContent=item.s;wrap.appendChild(s);return; }
+    var key='a'+i; var chk=!!checks[key];
+    if(chk)done++; total++;
+    var row=document.createElement('div'); row.className='ci'+(chk?' chk':'');
+    row.onclick=(function(k){ return function(){ toggleAuditCli(k); }; })(key);
+    var cb=document.createElement('div');cb.className='cb';
+    var txt=document.createElement('div');
+    var c2=document.createElement('div');c2.className='c2';c2.textContent=item.t;txt.appendChild(c2);
+    if(item.sub){var sb=document.createElement('div');sb.className='csb';sb.textContent=item.sub;txt.appendChild(sb);}
+    row.appendChild(cb);row.appendChild(txt);wrap.appendChild(row);
+  });
+  el('apt2').textContent='Выполнено: '+done+' из '+total;
+  el('apb2').style.width=total?(done/total*100)+'%':'0%';
+}
+function toggleAuditCli(key) {
+  if(curIdx<0)return;
+  if(!S.clients[curIdx].auditChecks)S.clients[curIdx].auditChecks={};
+  S.clients[curIdx].auditChecks[key]=!S.clients[curIdx].auditChecks[key];
+  sv();renderAuditClient(S.clients[curIdx].auditChecks);
+}
+function saveAuditClient() {
+  if(curIdx<0)return;
+  S.clients[curIdx].auditNotes=el('audit-notes').value;
+  sv();renderClients();showToast('✅ Аудит сохранён');
+}
+
+function renderAudit() {
+  var wrap=el('audit-list'); wrap.innerHTML='';
+  var total=0,done=0;
+  AITEMS.forEach(function(item,i) {
+    if(item.s){var s=document.createElement('div');s.className='sec';s.textContent=item.s;wrap.appendChild(s);return;}
+    var key='a'+i;var chk=!!S.auditChecks[key];
+    if(chk)done++;total++;
+    var row=document.createElement('div');row.className='ci'+(chk?' chk':'');
+    row.onclick=(function(k){return function(){toggleAudit(k);};})(key);
+    var cb=document.createElement('div');cb.className='cb';
+    var txt=document.createElement('div');
+    var c2=document.createElement('div');c2.className='c2';c2.textContent=item.t;txt.appendChild(c2);
+    if(item.sub){var sb=document.createElement('div');sb.className='csb';sb.textContent=item.sub;txt.appendChild(sb);}
+    row.appendChild(cb);row.appendChild(txt);wrap.appendChild(row);
+  });
+  el('apt').textContent='Выполнено: '+done+' из '+total;
+  el('apb').style.width=total?(done/total*100)+'%':'0%';
+}
+function toggleAudit(key){S.auditChecks[key]=!S.auditChecks[key];sv();renderAudit();}
+function resetAudit(){if(!confirm('Сбросить?'))return;S.auditChecks={};sv();renderAudit();}
+
+// FINANCE
+var MONTH_NAMES=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+function renderFinance() {
+  var allClients = S.clients.concat(S.archived||[]);
+  // Build month tabs from client dates
+  var months = {};
+  allClients.forEach(function(c){
+    if (c.date) months[c.date]=1;
+  });
+  var monthKeys = Object.keys(months).sort().reverse();
+
+  var tabsEl = el('fmonth-tabs');
+  tabsEl.innerHTML='';
+  var allTab=document.createElement('button');
+  allTab.className='ftab'+(fMonthFilter==='all'?' on':'');
+  allTab.textContent='Все';
+  allTab.onclick=function(){fMonthFilter='all';renderFinance();};
+  tabsEl.appendChild(allTab);
+  monthKeys.forEach(function(m){
+    var parts=m.split('-');
+    var label=MONTH_NAMES[parseInt(parts[1])-1]+' '+parts[0];
+    var btn=document.createElement('button');
+    btn.className='ftab'+(fMonthFilter===m?' on':'');
+    btn.textContent=label;
+    btn.onclick=(function(mm){return function(){fMonthFilter=mm;renderFinance();};})(m);
+    tabsEl.appendChild(btn);
+  });
+
+  var filtered = fMonthFilter==='all' ? allClients : allClients.filter(function(c){return c.date===fMonthFilter;});
+  var total=0,paid=0,wait=0;
+  filtered.forEach(function(c){
+    var p=parseFloat(c.price)||0; if(!p)return;
+    total+=p;
+    if(c.paid==='yes')paid+=p; else wait+=p;
+  });
+  var allTotal = allClients.reduce(function(a,c){return a+(parseFloat(c.price)||0);},0);
+
+  el('f-total').textContent=total.toLocaleString('ru');
+  el('f-paid').textContent=paid.toLocaleString('ru');
+  el('f-wait').textContent=wait.toLocaleString('ru');
+  el('f-alltime').textContent=allTotal.toLocaleString('ru')+' руб';
+
+  var list=el('finance-list');
+  var withPrice=filtered.filter(function(c){return parseFloat(c.price)>0;});
+  if(!withPrice.length){list.innerHTML='<div class="empty"><div class="empty-i">💰</div><p style="font-size:13px">Нет данных за этот период</p></div>';return;}
+  list.innerHTML='';
+  var card=document.createElement('div');card.className='card';
+  withPrice.forEach(function(c){
+    var row=document.createElement('div');row.className='frow';
+    var left=document.createElement('div');
+    var archTag=c.archived?'<span style="font-size:10px;color:var(--md)"> 📦</span>':'';
+    left.innerHTML='<div style="font-size:13px;font-weight:500">'+c.name+archTag+'</div><div style="font-size:11px;color:var(--md)">'+c.service+'</div>';
+    var right=document.createElement('div');right.style.cssText='display:flex;align-items:center;gap:8px';
+    var badge=document.createElement('span');
+    badge.style.cssText='font-size:11px;font-weight:500;padding:2px 7px;border-radius:6px;'+(c.paid==='yes'?'background:#EBF3E8;color:var(--gn)':c.paid==='partial'?'background:#FFF8E8;color:var(--gd)':'background:#FFF0E8;color:var(--tc)');
+    badge.textContent=c.paid==='yes'?'оплачено':c.paid==='partial'?'частично':'ожидает';
+    var pr=document.createElement('div');pr.style.cssText='font-size:14px;font-weight:600';
+    pr.textContent=parseFloat(c.price).toLocaleString('ru')+' руб';
+    right.appendChild(badge);right.appendChild(pr);
+    row.appendChild(left);row.appendChild(right);card.appendChild(row);
+  });
+  list.appendChild(card);
+}
+
+// TEMPLATES
+var DEF_TMPLS=[
+  {name:'После аудита',text:'Добрый день!\n\nСпасибо за доверие. По результатам нашей работы подготовила рекомендации.\n\nЧто сделать в первую очередь:\n— [добавьте рекомендации]\n\nПо цвету и декору:\n— [добавьте рекомендации]\n\nЧто можно приобрести:\n— [добавьте список]\n\nС уважением, [ваше имя]'},
+  {name:'После декорирования',text:'Добрый день!\n\nРада что нам удалось преобразить ваше пространство.\n\nЧтобы сохранить результат:\n— Раз в неделю возвращайте вещи на свои места\n— Раз в сезон пересматривайте текстиль\n— Не заполняйте новые пустые поверхности\n\nБуду рада увидеть фото через месяц!\n\nС уважением, [ваше имя]'},
+  {name:'Предложение услуг',text:'Добрый день!\n\nЯ декоратор и организатор пространства. Помогаю преобразить интерьер без ремонта — работаю с тем, что уже есть.\n\nЧто я делаю:\n— Аудит пространства\n— Подбор декора и текстиля\n— Перестановка и декорирование\n— Цветовые решения\n\nРезультат за 1 день. Без больших вложений.\n\nНапишите мне!'}
+];
+
+function renderTemplates() {
+  var all=DEF_TMPLS.concat(S.templates||[]);
+  var wrap=el('templates-list');wrap.innerHTML='';
+  all.forEach(function(t,i){
+    var isCustom=i>=DEF_TMPLS.length;
+    var div=document.createElement('div');div.className='tmpl';
+    var titleRow=document.createElement('div');
+    titleRow.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px';
+    var nm=document.createElement('span');nm.style.cssText='font-size:13px;font-weight:500';nm.textContent=t.name;
+    titleRow.appendChild(nm);
+    var btns=document.createElement('div');btns.style.cssText='display:flex;gap:5px';
+    var cpBtn=document.createElement('button');
+    cpBtn.style.cssText='background:var(--tc);color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit';
+    cpBtn.textContent='📋';cpBtn.title='Копировать';
+    cpBtn.onclick=(function(ii){return function(){copyTmpl(ii);};})(i);
+    btns.appendChild(cpBtn);
+    var edBtn=document.createElement('button');
+    edBtn.style.cssText='background:var(--ds);color:var(--ch);border:none;border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit';
+    edBtn.textContent='✏️';edBtn.title='Редактировать';
+    edBtn.onclick=(function(ii,isC){return function(){openEditTmpl(ii,isC);};})(i,isCustom);
+    btns.appendChild(edBtn);
+    if(isCustom){
+      var dlBtn=document.createElement('button');
+      dlBtn.style.cssText='background:#FFF0E8;color:var(--tc);border:none;border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit';
+      dlBtn.textContent='🗑';
+      dlBtn.onclick=(function(ii){return function(){delTmpl(ii-DEF_TMPLS.length);};})(i);
+      btns.appendChild(dlBtn);
+    }
+    titleRow.appendChild(btns);
+    var preview=document.createElement('div');
+    preview.style.cssText='font-size:12px;color:var(--md);line-height:1.5';
+    preview.textContent=t.text.substring(0,90)+(t.text.length>90?'…':'');
+    div.appendChild(titleRow);div.appendChild(preview);wrap.appendChild(div);
+  });
+}
+function openEditTmpl(i,isCustom) {
+  var all=DEF_TMPLS.concat(S.templates||[]);var t=all[i];
+  el('tmpl-title').textContent=isCustom?'Редактировать шаблон':'Просмотр шаблона';
+  el('tmpl-edit-idx').value=isCustom?(i-DEF_TMPLS.length):-2;
+  el('tmpl-name').value=t.name;el('tmpl-text').value=t.text;
+  el('tmpl-save-btn').style.display=isCustom?'flex':'none';
+  openM('m-tmpl');
+}
+function openNewTmpl() {
+  el('tmpl-title').textContent='Новый шаблон';
+  el('tmpl-edit-idx').value='-1';
+  el('tmpl-name').value='';el('tmpl-text').value='';
+  el('tmpl-save-btn').style.display='flex';
+  openM('m-tmpl');
+}
+function saveTmpl() {
+  var name=el('tmpl-name').value.trim();var text=el('tmpl-text').value.trim();
+  if(!name||!text){showToast('❌ Заполни название и текст');return;}
+  var editIdx=parseInt(el('tmpl-edit-idx').value);
+  if(editIdx>=0) S.templates[editIdx]={name:name,text:text};
+  else if(editIdx===-1) S.templates.push({name:name,text:text});
+  sv();renderTemplates();closeM('m-tmpl');showToast('✅ Шаблон сохранён');
+}
+function copyFromModal(){copyTmplText(el('tmpl-text').value);}
+function copyTmpl(i){var all=DEF_TMPLS.concat(S.templates||[]);copyTmplText(all[i].text);}
+function copyTmplText(txt){
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){showToast('📋 Скопировано!');}).catch(function(){fbCopy(txt);});}
+  else fbCopy(txt);
+}
+function fbCopy(txt){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('📋 Скопировано!');}
+function delTmpl(i){if(!confirm('Удалить шаблон?'))return;S.templates.splice(i,1);sv();renderTemplates();}
+
+// DIARY
+function renderDiary() {
+  var list=el('diary-list');var e=S.entries;
+  var days={};e.forEach(function(x){days[x.date]=1;});
+  el('d-days').textContent=Object.keys(days).length;
+  el('d-ent').textContent=e.length;
+  el('d-wk').textContent=Math.min(Math.floor(e.length/5)+1,17)+'+';
+  if(!e.length){list.innerHTML='<div class="empty"><div class="empty-i">📓</div><p style="font-size:13px">Нажми + Новая запись</p></div>';return;}
+  list.innerHTML='';
+  var rev=e.slice().reverse();
+  rev.forEach(function(en,ri){
+    var realIdx=e.length-1-ri;
+    var div=document.createElement('div');div.className='de';
+    var meta=document.createElement('div');
+    meta.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px';
+    meta.innerHTML='<span style="font-size:11px;color:var(--md)">'+en.date+'</span>';
+    var right=document.createElement('div');right.style.cssText='display:flex;align-items:center;gap:6px';
+    var topic=document.createElement('span');
+    topic.style.cssText='font-size:11px;background:var(--ds);padding:2px 8px;border-radius:7px;font-weight:500';
+    topic.textContent=en.topic;
+    var del=document.createElement('button');
+    del.style.cssText='background:none;border:none;color:var(--lg);font-size:16px;cursor:pointer;padding:2px';
+    del.textContent='×';
+    del.onclick=(function(ii){return function(){delDiary(ii);};})(realIdx);
+    right.appendChild(topic);right.appendChild(del);meta.appendChild(right);
+    var txt=document.createElement('div');txt.style.cssText='font-size:13px;line-height:1.6';txt.textContent=en.text;
+    div.appendChild(meta);div.appendChild(txt);
+    if(en.insight){var ins=document.createElement('div');ins.style.cssText='margin-top:8px;padding:8px 11px;background:#FFF8F0;border-radius:8px;font-size:12px;color:var(--tc);font-style:italic';ins.textContent='💡 '+en.insight;div.appendChild(ins);}
+    list.appendChild(div);
+  });
+}
+function saveDiary(){
+  var text=el('d-text').value.trim();if(!text){showToast('❌ Напиши что-нибудь');return;}
+  S.entries.push({date:todayStr,topic:el('d-topic').value,text:text,insight:el('d-ins').value.trim()});
+  sv();renderDiary();el('d-text').value='';el('d-ins').value='';closeM('dm');
+  showToast('✅ Запись добавлена');
+}
+function delDiary(i){if(!confirm('Удалить?'))return;S.entries.splice(i,1);sv();renderDiary();}
+
+// LESSONS
+var LESSONS=[
+  {week:'Неделя 1–2',id:'l1',title:'Баланс в пространстве',meta:'~30 мин',
+   theory:[{b:'Баланс',t:' — визуальное равновесие. Взгляд чувствует дисбаланс мгновенно.'},{b:'Симметричный:',t:' левая = правая.'},{b:'Асимметричный:',t:' разные предметы с одинаковым визуальным весом.'},{b:'Визуальный вес:',t:' тёмный тяжелее светлого.'}],
+   tasks:[{id:'t1a',text:'Найди 3 интерьера в Pinterest',tip:'«living room interior»'},{id:'t1b',text:'В каждом: симметрия или асимметрия?'},{id:'t1c',text:'Посмотри на комнату у себя дома'},{id:'t1d',text:'Попробуй переставить 1–2 предмета'}],
+   quiz:{id:'q1',q:'Тёмный диван слева. Чем уравновесить правую сторону?',opts:['Маленький светлый пуф','Высокое зеркало + крупное растение','Ничего'],correct:1,explain:'Зеркало даёт вертикаль. Растение добавляет объём.'}},
+  {week:'',id:'l2',title:'Ритм и повторение',meta:'~25 мин',
+   theory:[{b:'Ритм',t:' — повторение элементов.'},{b:'Правило трёх точек:',t:' цвет должен появиться минимум в 3 местах.'}],
+   tasks:[{id:'t2a',text:'Выбери один цвет в своей комнате'},{id:'t2b',text:'Поставь его в 3 разных точках'},{id:'t2c',text:'Сфотографируй до и после'}],
+   quiz:{id:'q2',q:'Поставила красную вазу. Как использовать цвет правильно?',opts:['Оставить одну','Добавить в двух других местах','Везде красные вещи'],correct:1,explain:'Одна деталь — случайность. Три точки — замысел.'}},
+  {week:'',id:'l3',title:'Акцент и фокусная точка',meta:'~20 мин',
+   theory:[{b:'Акцент',t:' — место куда взгляд приходит первым.'},{b:'Примеры:',t:' крупная картина, яркий диван, необычный светильник.'}],
+   tasks:[{id:'t3a',text:'Определи фокусную точку в одной комнате'},{id:'t3b',text:'Если нет — что им может стать?'},{id:'t3c',text:'Разбери 2 интерьера: где акцент?'}],
+   quiz:{id:'q3',q:'Яркая картина + цветной диван + пёстрый ковёр. Что скажешь?',opts:['Чем больше тем лучше','Выбрать один акцент, остальное нейтральнее','Убрать всё'],correct:1,explain:'Три конкурирующих акцента — визуальный шум.'}},
+  {week:'',id:'l4',title:'Цветовой круг и схемы',meta:'~35 мин',
+   theory:[{b:'Правило 60–30–10:',t:' 60% основной, 30% вспомогательный, 10% акцент.'},{b:'Монохромная:',t:' один цвет, разные оттенки.'},{b:'Температура:',t:' тёплые — уют, холодные — простор.'}],
+   tasks:[{id:'t4a',text:'Собери 5 цветовых палитр в Pinterest'},{id:'t4b',text:'В каждой определи 60–30–10'},{id:'t4c',text:'Посмотри свою комнату — какая схема?'},{id:'t4d',text:'Собери палитру для тестового клиента'}],
+   quiz:{id:'q4',q:'Клиент хочет уютную спальню. Какая палитра?',opts:['Холодный серый + белый','Тёплый бежевый + терракота','Яркий красный'],correct:1,explain:'Тёплые оттенки — уют и расслабление.'}},
+  {week:'Неделя 3–4',id:'l5',title:'Текстиль: главный инструмент',meta:'~30 мин',
+   theory:[{b:'Лён',t:' — воздух, натуральность.'},{b:'Бархат',t:' — роскошь, тепло.'},{b:'Ковёр:',t:' всегда больше чем кажется нужным.'}],
+   tasks:[{id:'t5a',text:'Найди 3 примера правильного размера ковра'},{id:'t5b',text:'Проверь шторы дома: до пола?'},{id:'t5c',text:'Найди 2 интерьера с хорошим миксом текстиля'},{id:'t5d',text:'Переложи подушки по-другому'}],
+   quiz:{id:'q5',q:'Что даст максимальный эффект за минимум денег?',opts:['Новые шторы до пола','Маленькие подушки','Ковёр 100×140'],correct:0,explain:'Шторы до пола поднимают потолок и меняют восприятие.'}},
+  {week:'',id:'l6',title:'Три слоя света',meta:'~25 мин',
+   theory:[{b:'Основной',t:' — люстра, споты.'},{b:'Рабочий',t:' — лампа над столом, бра.'},{b:'Акцентный',t:' — торшер, свечи. Создаёт уют.'}],
+   tasks:[{id:'t6a',text:'Посчитай источники света в одной комнате'},{id:'t6b',text:'Вечером включи только торшер / свечи'},{id:'t6c',text:'Найди 3 интерьера с хорошим освещением'}],
+   quiz:{id:'q6',q:'Только одна люстра. Что добавишь?',opts:['Вторую люстру','Торшер + настольную лампу','Более яркую лампочку'],correct:1,explain:'Торшер и настольная лампа добавляют сразу 2-й и 3-й слой.'}},
+  {week:'Неделя 5–6',id:'l7',title:'Масштаб и группировка',meta:'~30 мин',
+   theory:[{b:'Масштаб',t:' — соотношение предметов между собой.'},{b:'Правило нечётных чисел:',t:' группы из 3, 5, 7. Разная высота.'}],
+   tasks:[{id:'t7a',text:'Посмотри на полки у себя дома'},{id:'t7b',text:'Переставь: 3 высоты, 1 объединяющий элемент'},{id:'t7c',text:'Сфотографируй — это твой кейс!'}],
+   quiz:{id:'q7',q:'4 одинаковые рамки на полке. Что посоветуешь?',opts:['Купить ещё','Убрать одну, добавить другой высоты','Покрасить'],correct:1,explain:'3 предмета + разная высота = баланс.'}},
+  {week:'Неделя 7–8',id:'l8',title:'Работа с клиентом',meta:'~40 мин',
+   theory:[{b:'Что узнать:',t:' как живут, что раздражает, референсы, бюджет, сроки.'},{b:'После аудита:',t:' конкретный список — что переставить, убрать, добавить.'}],
+   tasks:[{id:'t8a',text:'Создай тестового клиента и заполни бриф'},{id:'t8b',text:'Проведи аудит через вкладку клиента'},{id:'t8c',text:'Напиши 5 рекомендаций в Дневник'},{id:'t8d',text:'Экспортируй полный PDF клиента'}],
+   quiz:{id:'q8',q:'«Хочу уют, но не знаю что это значит». Что делаешь?',opts:['Угадываешь сама','Просишь показать 5–7 фото интерьеров','Говоришь что невозможно'],correct:1,explain:'Из 5–7 картинок увидишь паттерн.'}}
+];
+
+function renderLessons() {
+  var wrap=el('lessons-wrap');wrap.innerHTML='';
+  var lastW='';var totT=0,dnT=0,dnL=0;
+  LESSONS.forEach(function(l,li){
+    l.tasks.forEach(function(t){totT++;if(S.tasksDone[t.id])dnT++;});
+    if(l.tasks.every(function(t){return S.tasksDone[t.id];}))dnL++;
+    if(l.week&&l.week!==lastW){var wt=document.createElement('div');wt.className='wtag';wt.textContent=l.week;wrap.appendChild(wt);lastW=l.week;}
+    var allD=l.tasks.every(function(t){return S.tasksDone[t.id];});
+    var card=document.createElement('div');card.className='lcard';card.id='lc-'+l.id;
+    var head=document.createElement('div');head.className='lhead';
+    head.onclick=(function(lid){return function(){toggleL(lid);};})(l.id);
+    var num=document.createElement('div');num.className='lnum';
+    num.style.background=allD?'var(--sg)':'var(--tc)';num.textContent=allD?'✓':(li+1);
+    var info=document.createElement('div');info.style.flex='1';
+    var title=document.createElement('div');title.style.cssText='font-size:13px;font-weight:500';title.textContent=l.title;
+    var meta=document.createElement('div');meta.style.cssText='font-size:11px;color:var(--md);margin-top:2px';meta.textContent=l.meta;
+    info.appendChild(title);info.appendChild(meta);
+    var arr=document.createElement('div');arr.className='larr';arr.textContent='▶';
+    head.appendChild(num);head.appendChild(info);head.appendChild(arr);card.appendChild(head);
+    var body=document.createElement('div');body.className='lbody';
+    var th=document.createElement('div');th.className='th';
+    l.theory.forEach(function(t){var p=document.createElement('p');var b=document.createElement('strong');b.style.color='var(--tc)';b.textContent=t.b;p.appendChild(b);p.appendChild(document.createTextNode(t.t));th.appendChild(p);});
+    body.appendChild(th);
+    var tlbl=document.createElement('div');tlbl.style.cssText='font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin:11px 0 5px';tlbl.textContent='📌 Задания';body.appendChild(tlbl);
+    l.tasks.forEach(function(t){
+      var row=document.createElement('div');row.className='ti'+(S.tasksDone[t.id]?' dn':'');
+      row.onclick=(function(tid,lid){return function(){toggleTask(tid,lid);};})(t.id,l.id);
+      var tb=document.createElement('div');tb.className='tb';
+      var txt=document.createElement('div');var td=document.createElement('div');td.className='td';td.textContent=t.text;txt.appendChild(td);
+      if(t.tip){var tp=document.createElement('div');tp.className='ttp';tp.textContent='💡 '+t.tip;txt.appendChild(tp);}
+      row.appendChild(tb);row.appendChild(txt);body.appendChild(row);
+    });
+    var qlbl=document.createElement('div');qlbl.style.cssText='font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 5px';qlbl.textContent='🧠 Проверь себя';body.appendChild(qlbl);
+    var qz=document.createElement('div');qz.className='qz';
+    var qq=document.createElement('div');qq.className='qq';qq.textContent=l.quiz.q;
+    var qos=document.createElement('div');qos.className='qos';
+    l.quiz.opts.forEach(function(opt,oi){
+      var btn=document.createElement('button');btn.className='qo';
+      var ans=S.quizAnswers[l.quiz.id];
+      if(ans!==undefined){if(oi===l.quiz.correct)btn.className+=' ok';else if(oi===ans)btn.className+=' no';}
+      btn.textContent=opt;
+      btn.onclick=(function(qid,chosen,correct,lid){return function(){answerQ(qid,chosen,correct,lid);};})(l.quiz.id,oi,l.quiz.correct,l.id);
+      qos.appendChild(btn);
+    });
+    var qe=document.createElement('div');qe.className='qe'+(S.quizAnswers[l.quiz.id]!==undefined?' sh':'');
+    qe.textContent=(S.quizAnswers[l.quiz.id]===l.quiz.correct?'✅ ':'❌ ')+l.quiz.explain;
+    qz.appendChild(qq);qz.appendChild(qos);qz.appendChild(qe);body.appendChild(qz);card.appendChild(body);wrap.appendChild(card);
+  });
+  var pct=totT?Math.round(dnT/totT*100):0;
+  el('ls-done').textContent=dnL;el('ls-tasks').textContent=dnT;el('ls-pct').textContent=pct+'%';el('lpbar').style.width=pct+'%';
+}
+function toggleL(id){document.getElementById('lc-'+id).classList.toggle('op');}
+function toggleTask(tid,lid){S.tasksDone[tid]=!S.tasksDone[tid];sv();renderLessons();document.getElementById('lc-'+lid).classList.add('op');}
+function answerQ(qid,chosen,correct,lid){if(S.quizAnswers[qid]!==undefined)return;S.quizAnswers[qid]=chosen;sv();renderLessons();document.getElementById('lc-'+lid).classList.add('op');}
+
+// PDF
+var CSS_BASE='body{font-family:-apple-system,sans-serif;max-width:680px;margin:36px auto;padding:0 26px;color:#2C2C2C;}h1{font-family:Georgia,serif;font-size:26px;font-weight:300;font-style:italic;color:#C4714A;margin-bottom:3px;}.sub{color:#6B6B6B;font-size:13px;margin-bottom:24px;}h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#C4714A;margin:20px 0 8px;padding-bottom:4px;border-bottom:2px solid #E8E2D9;}.row{display:flex;gap:6px;margin-bottom:8px;font-size:13px;}.lb{font-weight:500;min-width:120px;color:#6B6B6B;flex-shrink:0;}.val{flex:1;line-height:1.5;}.ft{margin-top:34px;font-size:11px;color:#D4CFC7;border-top:1px solid #E8E2D9;padding-top:11px;}@media print{body{margin:0;padding:16px;}}';
+
+function pWin(html){
+  var w=window.open('','_blank');
+  if(!w){showToast('❌ Разреши всплывающие окна в Настройках Safari');return;}
+  w.document.write(html);w.document.close();setTimeout(function(){w.print();},700);
+}
+
+function exportBriefFor(i){
+  var c=S.clients[i];if(!c)return;var b=c.brief||{};
+  pWin('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Бриф — '+c.name+'</title><style>'+CSS_BASE+'</style></head><body>'+
+    '<h1>Бриф клиента</h1><div class="sub">'+c.name+(c.contact?' · '+c.contact:'')+' · '+fmtDate()+'</div>'+
+    '<h2>Объект</h2>'+
+    '<div class="row"><span class="lb">Тип:</span><span class="val">'+(b.bType||'—')+'</span></div>'+
+    '<div class="row"><span class="lb">Площадь:</span><span class="val">'+(b.bArea||'—')+'</span></div>'+
+    '<div class="row"><span class="lb">Комнаты:</span><span class="val">'+(b.bRooms||'—')+'</span></div>'+
+    '<div class="row"><span class="lb">Ремонт:</span><span class="val">'+(b.bReno||'—')+'</span></div>'+
+    '<h2>Запрос</h2>'+
+    '<div class="row"><span class="lb">Проблема:</span><span class="val">'+nl(b.bProb||'—')+'</span></div>'+
+    '<div class="row"><span class="lb">Результат:</span><span class="val">'+nl(b.bRes||'—')+'</span></div>'+
+    '<div class="row"><span class="lb">Атмосфера:</span><span class="val">'+(b.bMood||'—')+'</span></div>'+
+    '<h2>Бюджет</h2>'+
+    '<div class="row"><span class="lb">Бюджет:</span><span class="val">'+(b.bBudget||'—')+'</span></div>'+
+    '<div class="row"><span class="lb">Дети/живот.:</span><span class="val">'+(b.bKids||'—')+'</span></div>'+
+    '<div class="row"><span class="lb">Сроки:</span><span class="val">'+(b.bDead||'—')+'</span></div>'+
+    (b.bExtra?'<div class="row"><span class="lb">Доп.:</span><span class="val">'+nl(b.bExtra)+'</span></div>':'')+
+    '<div class="ft">Кабинет декоратора · '+fmtToday()+'</div></body></html>');
+}
+
+function exportMoodFor(i){
+  var c=S.clients[i];if(!c||!c.mood){showToast('❌ Мудборд не заполнен');return;}var m=c.mood;
+  var pal=(m.palette||[]).map(function(p){return '<span style="display:inline-block;text-align:center;margin:0 5px 8px"><span style="display:block;width:38px;height:38px;background:'+p.h+';border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.12);margin:0 auto 2px"></span><span style="font-size:10px;color:#6B6B6B">'+p.n+'</span></span>';}).join('')||'—';
+  var CSS2=CSS_BASE.replace(/color:#C4714A/g,'color:#7A8C6E');
+  var roomColors='';
+  if(m.rcLiving||m.rcBedroom||m.rcKitchen||m.rcHall||m.rcBath||m.rcOther){
+    roomColors='<h2>Цвета по помещениям</h2>'+
+    (m.rcLiving?'<div class="row"><span class="lb">Гостиная:</span><span class="val">'+m.rcLiving+'</span></div>':'')+
+    (m.rcBedroom?'<div class="row"><span class="lb">Спальня:</span><span class="val">'+m.rcBedroom+'</span></div>':'')+
+    (m.rcKitchen?'<div class="row"><span class="lb">Кухня:</span><span class="val">'+m.rcKitchen+'</span></div>':'')+
+    (m.rcHall?'<div class="row"><span class="lb">Прихожая:</span><span class="val">'+m.rcHall+'</span></div>':'')+
+    (m.rcBath?'<div class="row"><span class="lb">Ванная:</span><span class="val">'+m.rcBath+'</span></div>':'')+
+    (m.rcOther?'<div class="row"><span class="lb">Другое:</span><span class="val">'+m.rcOther+'</span></div>':'');
+  }
+  pWin('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Мудборд — '+c.name+'</title><style>'+CSS2+'</style></head><body>'+
+    '<h1>Мудборд проекта</h1><div class="sub">'+c.name+' · '+fmtDate()+'</div>'+
+    '<h2>Настроение</h2><div style="font-size:14px;line-height:2">'+((m.keywords||[]).join(' · ')||'—')+'</div>'+
+    ((m.styles&&m.styles.length)?'<h2>Стиль</h2><div style="font-size:14px;line-height:2">'+m.styles.join(' · ')+'</div>':'')+
+    ((m.mats&&m.mats.length)?'<h2>Материалы</h2><div style="font-size:14px;line-height:2">'+m.mats.join(' · ')+'</div>':'')+
+    '<h2>Цветовая палитра</h2><div style="margin:8px 0">'+pal+'</div>'+
+    roomColors+
+    (m.concept?'<h2>Концепция</h2><div style="font-size:13px;line-height:1.7;background:#FFF8F0;border-radius:10px;padding:13px;border-left:3px solid #C4714A">'+nl(m.concept)+'</div>':'')+
+    (m.noLike?'<h2>Что НЕ нравится</h2><div style="font-size:13px;line-height:1.6">'+nl(m.noLike)+'</div>':'')+
+    (m.refs?'<h2>Референсы</h2><div style="font-size:13px;line-height:1.6">'+nl(m.refs)+'</div>':'')+
+    '<div class="ft">Кабинет декоратора · '+fmtToday()+'</div></body></html>');
+}
+
+function exportSmetaFor(i){
+  var c=S.clients[i];if(!c||!c.smeta||!c.smeta.length){showToast('❌ Смета пуста');return;}
+  var total=c.smeta.reduce(function(a,x){return a+(parseFloat(x.price)||0);},0);
+  var rows=c.smeta.map(function(it){return '<tr><td style="font-size:13px;padding:8px 0;border-bottom:1px solid #E8E2D9">'+it.name+'</td><td style="font-size:13px;padding:8px 0;border-bottom:1px solid #E8E2D9;text-align:right;font-weight:600;color:#C4714A">'+(parseFloat(it.price)||0).toLocaleString('ru')+' руб</td></tr>';}).join('');
+  pWin('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Смета — '+c.name+'</title><style>'+CSS_BASE+'table{width:100%;border-collapse:collapse;margin:12px 0;}th{text-align:left;font-size:12px;font-weight:600;text-transform:uppercase;color:#6B6B6B;padding:8px 0;border-bottom:2px solid #E8E2D9;}</style></head><body>'+
+    '<h1>Смета проекта</h1><div class="sub">'+c.name+' · '+fmtDate()+'</div>'+
+    '<table><thead><tr><th>Предмет</th><th style="text-align:right">Сумма</th></tr></thead><tbody>'+rows+
+    '<tr><td></td><td style="font-family:Georgia,serif;font-size:18px;font-weight:600;color:#C4714A;text-align:right;padding:12px 0;border-top:2px solid #C4714A">Итого: '+total.toLocaleString('ru')+' руб</td></tr>'+
+    '</tbody></table><div class="ft">Кабинет декоратора · '+fmtToday()+'</div></body></html>');
+}
+
+function exportAuditFor(i){
+  var c=S.clients[i];if(!c||!c.auditChecks){showToast('❌ Аудит не проведён');return;}
+  var checks=c.auditChecks;var rows='';
+  AITEMS.forEach(function(item,idx){
+    if(item.s){rows+='<tr><td colspan="2" style="font-weight:600;color:#C4714A;font-size:12px;text-transform:uppercase;padding:12px 0 5px;border-bottom:2px solid #E8E2D9">'+item.s+'</td></tr>';return;}
+    var key='a'+idx;var chk=!!checks[key];
+    rows+='<tr><td style="font-size:13px;padding:7px 0;border-bottom:1px solid #E8E2D9">'+item.t+'</td><td style="text-align:right;font-size:13px;padding:7px 0;border-bottom:1px solid #E8E2D9;color:'+(chk?'#4A7C5F':'#D4CFC7')+'">'+(chk?'✓':'—')+'</td></tr>';
+  });
+  pWin('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Аудит — '+c.name+'</title><style>'+CSS_BASE+'table{width:100%;border-collapse:collapse;}</style></head><body>'+
+    '<h1>Аудит пространства</h1><div class="sub">'+c.name+' · '+fmtDate()+'</div>'+
+    '<table>'+rows+'</table>'+
+    (c.auditNotes?'<h2>Заметки</h2><div style="font-size:13px;line-height:1.7;background:#FFF8F0;border-radius:10px;padding:13px;border-left:3px solid #C4714A">'+nl(c.auditNotes)+'</div>':'')+
+    '<div class="ft">Кабинет декоратора · '+fmtToday()+'</div></body></html>');
+}
+
+function exportFull(i){
+  var c=S.clients[i];if(!c)return;
+  var b=c.brief||{};var m=c.mood||{};
+  var pal=(m.palette||[]).map(function(p){return '<span style="display:inline-block;text-align:center;margin:0 4px 7px"><span style="display:block;width:32px;height:32px;background:'+p.h+';border-radius:50%;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.12);margin:0 auto 2px"></span><span style="font-size:10px;color:#6B6B6B">'+p.n+'</span></span>';}).join('')||'—';
+  var smTotal=c.smeta?c.smeta.reduce(function(a,x){return a+(parseFloat(x.price)||0);},0):0;
+  var prog=parseInt(c.progress)||0;
+  pWin('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Проект — '+c.name+'</title><style>'+CSS_BASE+'</style></head><body>'+
+    '<h1>Проект: '+c.name+'</h1><div class="sub">'+(c.contact||'')+' · '+fmtDate()+'</div>'+
+    '<h2>Проект</h2>'+
+    '<div class="row"><span class="lb">Услуга:</span><span class="val">'+c.service+'</span></div>'+
+    '<div class="row"><span class="lb">Статус:</span><span class="val">'+(SL[c.status]||'')+'</span></div>'+
+    (c.price?'<div class="row"><span class="lb">Стоимость:</span><span class="val">'+c.price+' руб</span></div>':'')+
+    '<div class="row"><span class="lb">Прогресс:</span><span class="val">'+prog+'%</span></div>'+
+    '<div style="height:5px;background:#E8E2D9;border-radius:2px;overflow:hidden;margin-bottom:8px"><div style="height:100%;width:'+prog+'%;background:linear-gradient(90deg,#C4714A,#B8963E);border-radius:2px"></div></div>'+
+    (b.bArea?'<h2>Бриф</h2><div class="row"><span class="lb">Объект:</span><span class="val">'+(b.bType||'—')+' · '+(b.bArea||'—')+'</span></div><div class="row"><span class="lb">Проблема:</span><span class="val">'+nl(b.bProb||'—')+'</span></div><div class="row"><span class="lb">Результат:</span><span class="val">'+nl(b.bRes||'—')+'</span></div><div class="row"><span class="lb">Бюджет:</span><span class="val">'+(b.bBudget||'—')+'</span></div>':'')+
+    (m.concept?'<h2>Мудборд</h2><div class="row"><span class="lb">Настроение:</span><span class="val">'+((m.keywords||[]).join(' · ')||'—')+'</span></div><div style="margin:7px 0">'+pal+'</div><div style="font-size:13px;line-height:1.7;background:#FFF8F0;border-radius:9px;padding:12px;border-left:3px solid #C4714A;margin-top:8px">'+nl(m.concept||'')+'</div>':'')+
+    (smTotal>0?'<h2>Смета</h2>'+c.smeta.map(function(it){return '<div class="row"><span class="val">'+it.name+'</span><span style="font-weight:600;color:#C4714A">'+(parseFloat(it.price)||0).toLocaleString('ru')+' руб</span></div>';}).join('')+'<div class="row" style="border-top:2px solid #C4714A;padding-top:8px;margin-top:4px"><span class="lb">Итого:</span><span style="font-family:Georgia,serif;font-size:18px;font-weight:600;color:#C4714A">'+smTotal.toLocaleString('ru')+' руб</span></div>':'')+
+    '<div class="ft">Кабинет декоратора · '+fmtToday()+'</div></body></html>');
+}
+
+// INIT
+renderPalG();
+renderClients();
+renderFinance();
+renderTemplates();
+renderLessons();
+renderDiary();
+renderAudit();
+</script>
+</body>
+</html>
