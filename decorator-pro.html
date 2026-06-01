@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Кабинет декоратора</title>
+<style>
+:root{--cream:#F5F0E8;--warm:#FAF7F2;--tc:#C4714A;--sage:#7A8C6E;--charcoal:#2C2C2C;--mid:#6B6B6B;--lgray:#D4CFC7;--gold:#B8963E;--dust:#E8E2D9;--green:#4A7C5F;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;}
+.hdr{background:var(--charcoal);color:var(--cream);padding:14px 18px 10px;position:sticky;top:0;z-index:100;}
+.hdr-row{display:flex;justify-content:space-between;align-items:center;}
+.hdr h1{font-family:Georgia,serif;font-size:19px;font-weight:300;font-style:italic;}
+.hdr-date{font-size:11px;color:var(--lgray);text-align:right;line-height:1.4;}
+.nav{display:flex;background:var(--charcoal);padding:0 16px 12px;gap:5px;overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nb{flex-shrink:0;padding:6px 12px;border:1px solid rgba(255,255,255,.2);border-radius:18px;background:transparent;color:rgba(255,255,255,.55);font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+.nb.on{background:var(--tc);border-color:var(--tc);color:#fff;font-weight:500;}
+.scr{display:none;padding:16px 16px 100px;}
+.scr.on{display:block;}
+.card{background:var(--warm);border-radius:15px;padding:16px;margin-bottom:12px;border:1px solid var(--dust);}
+.ct{font-family:Georgia,serif;font-size:17px;font-weight:600;margin-bottom:12px;}
+.lbl{display:block;font-size:11px;font-weight:500;color:var(--mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;margin-top:11px;}
+.lbl:first-child{margin-top:0;}
+.inp{width:100%;background:var(--cream);border:1px solid var(--lgray);border-radius:9px;padding:9px 12px;font-size:14px;color:var(--charcoal);outline:none;font-family:inherit;box-sizing:border-box;}
+.inp:focus{border-color:var(--tc);}
+textarea.inp{resize:vertical;min-height:65px;line-height:1.5;}
+.btn{display:flex;align-items:center;justify-content:center;gap:5px;padding:11px;border:none;border-radius:11px;font-size:14px;font-weight:500;cursor:pointer;width:100%;margin-top:11px;font-family:inherit;}
+.btc{background:var(--tc);color:#fff;}
+.bds{background:var(--dust);color:var(--charcoal);}
+.bsg{background:var(--sage);color:#fff;}
+.bgd{background:var(--gold);color:#fff;}
+.btn:active{opacity:.82;}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:13px;}
+.stat{background:var(--warm);border-radius:13px;padding:12px 8px;text-align:center;border:1px solid var(--dust);}
+.sn{font-family:Georgia,serif;font-size:25px;font-weight:600;color:var(--tc);line-height:1;}
+.sl2{font-size:11px;color:var(--mid);margin-top:3px;}
+.pb{height:5px;background:var(--dust);border-radius:3px;overflow:hidden;}
+.pbf{height:100%;background:linear-gradient(90deg,var(--tc),var(--gold));border-radius:3px;transition:width .4s;}
+.sec{font-size:11px;font-weight:500;color:var(--tc);text-transform:uppercase;letter-spacing:.1em;padding:12px 0 5px;border-bottom:2px solid var(--tc);margin-bottom:3px;}
+.ci{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--dust);cursor:pointer;}
+.ci:last-child{border-bottom:none;}
+.cb{width:21px;height:21px;border:2px solid var(--lgray);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.ci.chk .cb{background:var(--sage);border-color:var(--sage);}
+.ci.chk .cb::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
+.ci.chk .ct2{color:var(--mid);text-decoration:line-through;}
+.ct2{font-size:14px;line-height:1.4;flex:1;}
+.csb{font-size:12px;color:var(--mid);margin-top:2px;}
+/* LESSONS */
+.lc{background:var(--warm);border-radius:15px;margin-bottom:10px;border:1px solid var(--dust);overflow:hidden;}
+.lh{padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;}
+.ln{width:31px;height:31px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;color:#fff;}
+.lb{display:none;padding:0 15px 15px;border-top:1px solid var(--dust);}
+.lc.op .lb{display:block;}
+.lc.op .la{transform:rotate(90deg);}
+.la{font-size:13px;color:var(--lgray);transition:transform .25s;}
+.th{background:#FFF8F0;border-radius:10px;padding:12px 14px;margin:12px 0;border-left:3px solid var(--tc);}
+.th p{font-size:13px;line-height:1.7;margin-bottom:5px;}
+.th p:last-child{margin-bottom:0;}
+.ti{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--dust);cursor:pointer;}
+.ti:last-child{border-bottom:none;}
+.tb2{width:19px;height:19px;border:2px solid var(--lgray);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.ti.dn .tb2{background:var(--sage);border-color:var(--sage);}
+.ti.dn .tb2::after{content:'✓';color:#fff;font-size:11px;font-weight:700;}
+.ti.dn .td{color:var(--mid);text-decoration:line-through;}
+.td{font-size:13px;line-height:1.4;flex:1;}
+.ttp{font-size:12px;color:var(--mid);margin-top:2px;font-style:italic;}
+.qz{background:#F0F5F0;border-radius:10px;padding:12px 14px;margin:12px 0;}
+.qq{font-size:14px;font-weight:500;margin-bottom:10px;line-height:1.4;}
+.qos{display:flex;flex-direction:column;gap:6px;}
+.qo{padding:9px 12px;background:#fff;border-radius:8px;border:1px solid var(--lgray);font-size:13px;cursor:pointer;text-align:left;font-family:inherit;color:var(--charcoal);}
+.qo.ok{background:#EBF3E8;border-color:var(--sage);color:var(--green);}
+.qo.no{background:#FFF0E8;border-color:var(--tc);color:var(--tc);}
+.qe{font-size:12px;margin-top:8px;padding:9px;background:#fff;border-radius:7px;line-height:1.5;display:none;}
+.qe.sh{display:block;}
+.wtag{display:inline-block;background:var(--charcoal);color:var(--cream);font-size:11px;padding:3px 9px;border-radius:7px;margin:14px 0 7px;}
+/* DIARY */
+.de{background:var(--warm);border-radius:14px;padding:15px;margin-bottom:10px;border-left:3px solid var(--tc);}
+.dm{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.dd{font-size:11px;color:var(--mid);}
+.dtop{font-size:11px;background:var(--dust);padding:3px 8px;border-radius:8px;font-weight:500;}
+.dbt{background:none;border:none;color:var(--lgray);font-size:17px;cursor:pointer;padding:3px;line-height:1;}
+.dins{margin-top:8px;padding:8px 12px;background:#FFF8F0;border-radius:8px;font-size:13px;color:var(--tc);font-style:italic;}
+/* CLIENTS */
+.clicard{background:var(--warm);border-radius:15px;padding:15px;margin-bottom:10px;border:1px solid var(--dust);}
+.clihead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.cliname{font-family:Georgia,serif;font-size:18px;font-weight:600;flex:1;margin-right:8px;}
+.stbadge{font-size:10px;font-weight:500;padding:3px 8px;border-radius:8px;text-transform:uppercase;flex-shrink:0;}
+.st-new{background:#EBF3E8;color:var(--sage);}
+.st-active{background:#FFF0E8;color:var(--tc);}
+.st-done{background:var(--dust);color:var(--mid);}
+.cliinfo{font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:10px;}
+.clitabs{display:flex;gap:5px;margin-bottom:10px;}
+.clitp{flex:1;padding:7px;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;background:var(--dust);color:var(--mid);}
+.clitp.on{background:var(--charcoal);color:#fff;}
+.clipanel{display:none;}
+.clipanel.on{display:block;}
+.clibtn-row{display:flex;gap:6px;margin-top:8px;}
+.clibtn-row button{flex:1;padding:8px;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;}
+/* MOODBOARD */
+.kwcloud{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0;}
+.kw{padding:5px 12px;border-radius:18px;border:1px solid var(--lgray);font-size:13px;cursor:pointer;background:var(--warm);}
+.kw.sel{background:var(--charcoal);color:#fff;border-color:var(--charcoal);}
+.prow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.pchip{width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.12);cursor:pointer;flex-shrink:0;}
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;}
+.mbg.op{display:flex;}
+.modal{background:var(--warm);border-radius:20px 20px 0 0;padding:20px 17px 40px;width:100%;max-height:88vh;overflow-y:auto;}
+.mh{width:36px;height:4px;background:var(--lgray);border-radius:2px;margin:0 auto 16px;}
+.mt{font-family:Georgia,serif;font-size:20px;font-weight:600;margin-bottom:16px;}
+.hbox{background:#FFF0E8;border-radius:11px;padding:12px 14px;margin:11px 0;border-left:3px solid var(--tc);font-size:13px;line-height:1.6;}
+.ig{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--dust);}
+.ig:last-child{border-bottom:none;}
+.ign{width:27px;height:27px;background:var(--tc);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+.igt{font-size:14px;line-height:1.5;flex:1;}
+.ign2{font-size:12px;color:var(--mid);margin-top:4px;font-style:italic;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-row">
+    <h1>Кабинет декоратора</h1>
+    <div class="hdr-date" id="hdate"></div>
+  </div>
+</div>
+<div class="nav" id="mainnav">
+  <button class="nb on" onclick="go('clients')">👥 Клиенты</button>
+  <button class="nb" onclick="go('learn')">📚 Учёба</button>
+  <button class="nb" onclick="go('diary')">📓 Дневник</button>
+  <button class="nb" onclick="go('audit')">✅ Аудит</button>
+  <button class="nb" onclick="go('install')">📲 Установка</button>
+</div>
+
+<!-- ═══ КЛИЕНТЫ ═══ -->
+<div id="scr-clients" class="scr on">
+  <div class="stats">
+    <div class="stat"><div class="sn" id="cl-all">0</div><div class="sl2">клиентов</div></div>
+    <div class="stat"><div class="sn" id="cl-act" style="color:var(--tc)">0</div><div class="sl2">активных</div></div>
+    <div class="stat"><div class="sn" id="cl-done" style="color:var(--sage)">0</div><div class="sl2">завершено</div></div>
+  </div>
+  <button class="btn btc" onclick="openNewClient()">+ Новый клиент</button>
+  <div id="clients-list" style="margin-top:12px"></div>
+</div>
+
+<!-- ═══ УЧЁБА ═══ -->
+<div id="scr-learn" class="scr">
+  <div class="stats">
+    <div class="stat"><div class="sn" id="ls-done">0</div><div class="sl2">уроков</div></div>
+    <div class="stat"><div class="sn" id="ls-tasks">0</div><div class="sl2">заданий</div></div>
+    <div class="stat"><div class="sn" id="ls-pct" style="color:var(--sage)">0%</div><div class="sl2">прогресс</div></div>
+  </div>
+  <div class="card" style="padding:12px 15px">
+    <div style="font-size:13px;color:var(--mid);margin-bottom:5px">Общий прогресс</div>
+    <div class="pb"><div class="pbf" id="lpbar" style="width:0%"></div></div>
+  </div>
+  <div id="lessons-wrap"></div>
+</div>
+
+<!-- ═══ ДНЕВНИК ═══ -->
+<div id="scr-diary" class="scr">
+  <div class="stats">
+    <div class="stat"><div class="sn" id="d-days">0</div><div class="sl2">дней</div></div>
+    <div class="stat"><div class="sn" id="d-ent">0</div><div class="sl2">записей</div></div>
+    <div class="stat"><div class="sn" id="d-wk" style="color:var(--sage)">1</div><div class="sl2">неделя</div></div>
+  </div>
+  <button class="btn btc" onclick="openM('dm')">+ Новая запись</button>
+  <div id="diary-list" style="margin-top:12px"></div>
+</div>
+
+<!-- ═══ АУДИТ ═══ -->
+<div id="scr-audit" class="scr">
+  <div class="card" style="padding:12px 15px">
+    <div id="apt" style="font-size:13px;color:var(--mid);margin-bottom:5px">Выполнено: 0 из 0</div>
+    <div class="pb"><div class="pbf" id="apb" style="width:0%"></div></div>
+  </div>
+  <div class="card"><div id="audit-list"></div></div>
+  <button class="btn bds" onclick="resetAudit()">🔄 Сбросить для нового клиента</button>
+</div>
+
+<!-- ═══ УСТАНОВКА ═══ -->
+<div id="scr-install" class="scr">
+  <div class="card">
+    <div class="ct">📲 Как открыть в Safari</div>
+    <p style="font-size:13px;color:var(--mid);line-height:1.6">Приложение уже работает по ссылке на GitHub. Установи его на экран домой:</p>
+  </div>
+  <div class="card">
+    <div class="ig"><div class="ign">1</div><div class="igt">Открой Safari и перейди по адресу:<br><strong>lydiakravtsova.github.io/decorator-app/decorator-pro.html</strong></div></div>
+    <div class="ig"><div class="ign">2</div><div class="igt">Нажми кнопку <strong>«Поделиться»</strong> внизу — квадрат со стрелкой ↑<div class="ign2">Она в нижней панели Safari</div></div></div>
+    <div class="ig"><div class="ign">3</div><div class="igt">Прокрути список и нажми <strong>«На экран Домой»</strong><div class="ign2">Иконка домика 🏠</div></div></div>
+    <div class="ig"><div class="ign">4</div><div class="igt">Нажми <strong>«Добавить»</strong> — иконка появится на рабочем столе<div class="ign2">Открывается как приложение без браузера</div></div></div>
+  </div>
+  <div class="hbox">⚠️ <strong>Данные хранятся в Safari.</strong> Не очищай «История и данные сайтов» в настройках — иначе данные удалятся. Важные брифы экспортируй в PDF.</div>
+</div>
+
+<!-- MODAL: НОВЫЙ КЛИЕНТ -->
+<div class="mbg" id="m-newclient" onclick="closeMbg(event,'m-newclient')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt" id="ncm-title">Новый клиент</div>
+    <input type="hidden" id="nc-idx" value="-1">
+    <span class="lbl">Имя клиента</span><input class="inp" id="nc-name" placeholder="Анна Иванова">
+    <span class="lbl">Контакт</span><input class="inp" id="nc-contact" placeholder="@username или телефон">
+    <span class="lbl">Тип услуги</span>
+    <select class="inp" id="nc-service">
+      <option>Декорирование с тем, что есть</option><option>Экспресс-аудит</option>
+      <option>Подбор декора и текстиля</option><option>Цветовое решение</option>
+      <option>Аудит дизайн-проекта</option><option>Онлайн-консультация</option>
+      <option>Организация пространства</option><option>Портфолио / бесплатно</option>
+    </select>
+    <span class="lbl">Статус</span>
+    <select class="inp" id="nc-status">
+      <option value="new">Новый</option><option value="active">В работе</option><option value="done">Завершён</option>
+    </select>
+    <span class="lbl">Стоимость</span><input class="inp" id="nc-price" placeholder="5000 руб / бесплатно">
+    <span class="lbl">Заметки</span><textarea class="inp" id="nc-notes" placeholder="Детали..."></textarea>
+    <button class="btn btc" onclick="saveClient()">Сохранить</button>
+    <button class="btn bds" onclick="closeM('m-newclient')" style="margin-top:7px">Отмена</button>
+  </div>
+</div>
+
+<!-- MODAL: БРИФ -->
+<div class="mbg" id="m-brief" onclick="closeMbg(event,'m-brief')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt">📋 Бриф клиента</div>
+    <div style="font-size:13px;color:var(--mid);margin-bottom:12px" id="brief-cliname"></div>
+    <span class="lbl">Тип помещения</span>
+    <select class="inp" id="b-type"><option>Квартира</option><option>Дом</option><option>Офис</option><option>Другое</option></select>
+    <span class="lbl">Площадь</span><input class="inp" id="b-area" placeholder="45 м²">
+    <span class="lbl">Комнаты в работе</span><input class="inp" id="b-rooms" placeholder="Гостиная, спальня">
+    <span class="lbl">Ремонт?</span>
+    <select class="inp" id="b-reno"><option>Нет — работаем с тем, что есть</option><option>Косметический</option><option>Капитальный — идёт</option><option>Планируется</option></select>
+    <span class="lbl">Проблема / что не нравится</span><textarea class="inp" id="b-problem" placeholder="Тёмно, захламлено, нет уюта..."></textarea>
+    <span class="lbl">Желаемый результат</span><textarea class="inp" id="b-result" placeholder="Как должна ощущаться комната?"></textarea>
+    <span class="lbl">Настроение / атмосфера</span><input class="inp" id="b-mood" placeholder="Тепло, уют, природа...">
+    <span class="lbl">Бюджет на покупки</span>
+    <select class="inp" id="b-budget"><option>Без покупок — только то, что есть</option><option>До 10 000 руб / 100 €</option><option>10–30 тыс / 100–300 €</option><option>30–100 тыс / 300–1000 €</option><option>Без ограничений</option></select>
+    <span class="lbl">Дети / животные</span>
+    <select class="inp" id="b-kids"><option>Нет</option><option>Дети</option><option>Животные</option><option>Дети и животные</option></select>
+    <span class="lbl">Сроки</span><input class="inp" id="b-deadline" placeholder="Через 2 недели">
+    <span class="lbl">Дополнительно</span><textarea class="inp" id="b-extra" placeholder="Всё важное..."></textarea>
+    <button class="btn btc" onclick="saveBrief()">💾 Сохранить бриф</button>
+    <button class="btn bsg" onclick="exportClientBrief()" style="margin-top:7px">📄 PDF для печати</button>
+    <button class="btn bds" onclick="closeM('m-brief')" style="margin-top:7px">Закрыть</button>
+  </div>
+</div>
+
+<!-- MODAL: МУДБОРД -->
+<div class="mbg" id="m-mood" onclick="closeMbg(event,'m-mood')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt">🎨 Мудборд</div>
+    <div style="font-size:13px;color:var(--mid);margin-bottom:12px" id="mood-cliname"></div>
+    <span class="lbl">Настроение</span>
+    <div class="kwcloud" id="kwcloud"></div>
+    <span class="lbl">Цветовая палитра</span>
+    <p style="font-size:12px;color:var(--mid);margin:5px 0 10px">Нажми на цвет — добавится в палитру</p>
+    <div id="pal-groups"></div>
+    <span class="lbl">Выбранная палитра</span>
+    <div id="sel-pal" style="display:flex;flex-wrap:wrap;gap:7px;min-height:46px;padding:10px;background:var(--cream);border-radius:10px;border:1px solid var(--lgray)">
+      <span style="font-size:13px;color:var(--lgray);align-self:center">Нажми на цвета выше →</span>
+    </div>
+    <span class="lbl">Описание образа</span><textarea class="inp" id="mood-concept" placeholder="Тёплое пространство с акцентами из дерева и льна..."></textarea>
+    <span class="lbl">Что НЕ нравится клиенту</span><textarea class="inp" id="mood-no" placeholder="Не любит яркие цвета..."></textarea>
+    <span class="lbl">Ссылки на референсы</span><textarea class="inp" id="mood-refs" placeholder="Ссылки на Pinterest..."></textarea>
+    <button class="btn btc" onclick="saveMood()">💾 Сохранить мудборд</button>
+    <button class="btn bsg" onclick="exportClientMood()" style="margin-top:7px">📄 PDF для печати</button>
+    <button class="btn bds" onclick="closeM('m-mood')" style="margin-top:7px">Закрыть</button>
+  </div>
+</div>
+
+<!-- MODAL: ДНЕВНИК -->
+<div class="mbg" id="dm" onclick="closeMbg(event,'dm')">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mt">Новая запись</div>
+    <span class="lbl">Тема</span>
+    <select class="inp" id="d-topic">
+      <option>Принципы дизайна</option><option>Цвет и палитры</option><option>Текстиль и материалы</option>
+      <option>Свет</option><option>Работа с клиентом</option><option>Разбор интерьера</option>
+      <option>Практика — свой проект</option><option>Практика — клиент</option>
+      <option>Насмотренность</option><option>Блог</option><option>Другое</option>
+    </select>
+    <span class="lbl">Что изучила / сделала</span>
+    <textarea class="inp" id="d-text" placeholder="Разобрала принцип баланса..."></textarea>
+    <span class="lbl">Главный инсайт (необязательно)</span>
+    <input class="inp" id="d-ins" placeholder="Ковёр должен быть больше!">
+    <button class="btn btc" onclick="saveDiary()">Сохранить</button>
+    <button class="btn bds" onclick="closeM('dm')" style="margin-top:7px">Отмена</button>
+  </div>
+</div>
+
+<script>
+const KEY='deco-v4';
+let S={};
+function loadS(){
+  try{S=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){S={};}
+  if(!S.clients)S.clients=[];
+  if(!S.entries)S.entries=[];
+  if(!S.auditChecks)S.auditChecks={};
+  if(!S.tasksDone)S.tasksDone={};
+  if(!S.quizAnswers)S.quizAnswers={};
+  if(!S.curClientIdx)S.curClientIdx=-1;
+  if(!S.curMoodPal)S.curMoodPal=[];
+  if(!S.curMoodKw)S.curMoodKw=[];
+}
+function sv(){localStorage.setItem(KEY,JSON.stringify(S));}
+loadS();
+
+const now=new Date();
+document.getElementById('hdate').innerHTML=now.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'long'})+'<br>'+now.getFullYear();
+
+// NAV
+const SCRMAP={clients:0,learn:1,diary:2,audit:3,install:4};
+function go(name){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('scr-'+name).classList.add('on');
+  const btns=[...document.querySelectorAll('.nb')];
+  if(btns[SCRMAP[name]])btns[SCRMAP[name]].classList.add('on');
+}
+
+// MODALS
+function openM(id){document.getElementById(id).classList.add('op');}
+function closeM(id){document.getElementById(id).classList.remove('op');}
+function closeMbg(e,id){if(e.target===document.getElementById(id))closeM(id);}
+
+// ═══════════════════════════════
+// КЛИЕНТЫ
+// ═══════════════════════════════
+const SLABEL={new:'Новый',active:'В работе',done:'Завершён'};
+const SCLS={new:'st-new',active:'st-active',done:'st-done'};
+
+function renderClients(){
+  const list=document.getElementById('clients-list');
+  const cl=S.clients;
+  document.getElementById('cl-all').textContent=cl.length;
+  document.getElementById('cl-act').textContent=cl.filter(c=>c.status==='active').length;
+  document.getElementById('cl-done').textContent=cl.filter(c=>c.status==='done').length;
+  if(!cl.length){list.innerHTML=`<div style="text-align:center;padding:36px 18px;color:var(--mid)"><div style="font-size:36px;margin-bottom:10px">👥</div><p style="font-size:14px;line-height:1.5">Нажми «+ Новый клиент»<br>чтобы начать работу</p></div>`;return;}
+  list.innerHTML=cl.map((c,i)=>{
+    const hasBrief=!!(c.brief&&c.brief['b-area']);
+    const hasMood=!!(c.mood&&c.mood.concept);
+    const prog=parseInt(c.progress)||0;
+    return `<div class="clicard">
+      <div class="clihead">
+        <div class="cliname">${c.name}</div>
+        <span class="stbadge ${SCLS[c.status]}">${SLABEL[c.status]}</span>
+      </div>
+      <div class="cliinfo">
+        ${c.contact?`📞 ${c.contact}<br>`:''}
+        🛠 ${c.service}${c.price?` · 💰 ${c.price}`:''}
+        ${c.notes?`<br>📝 ${c.notes}`:''}
+      </div>
+      <div class="clitabs">
+        <button class="clitp ${c._tab==='brief'?'on':''}" onclick="switchCliTab(${i},'brief')">📋 Бриф${hasBrief?' ✓':''}</button>
+        <button class="clitp ${c._tab==='mood'?'on':''}" onclick="switchCliTab(${i},'mood')">🎨 Мудборд${hasMood?' ✓':''}</button>
+        <button class="clitp ${c._tab==='info'?'on':''}" onclick="switchCliTab(${i},'info')">⚙️ Проект</button>
+      </div>
+      <div class="clipanel ${c._tab==='brief'?'on':''}" id="cp-brief-${i}">
+        ${hasBrief?`<div style="font-size:13px;color:var(--mid);line-height:1.7">
+          📍 ${c.brief['b-type']} · ${c.brief['b-area']||'—'}<br>
+          🎯 ${(c.brief['b-problem']||'').substring(0,60)}${(c.brief['b-problem']||'').length>60?'…':''}
+        </div>`:'<div style="font-size:13px;color:var(--mid);padding:8px 0">Бриф ещё не заполнен</div>'}
+        <div class="clibtn-row">
+          <button onclick="openBrief(${i})" style="background:var(--tc);color:#fff">✏️ ${hasBrief?'Редактировать':'Заполнить'}</button>
+          ${hasBrief?`<button onclick="exportBriefFor(${i})" style="background:var(--dust);color:var(--charcoal)">📄 PDF</button>`:''}
+        </div>
+      </div>
+      <div class="clipanel ${c._tab==='mood'?'on':''}" id="cp-mood-${i}">
+        ${hasMood?`<div style="font-size:13px;color:var(--mid);line-height:1.7">
+          🎨 ${(c.mood.keywords||[]).join(', ')||'—'}<br>
+          💬 ${(c.mood.concept||'').substring(0,60)}${(c.mood.concept||'').length>60?'…':''}
+        </div>`:'<div style="font-size:13px;color:var(--mid);padding:8px 0">Мудборд ещё не создан</div>'}
+        <div class="clibtn-row">
+          <button onclick="openMood(${i})" style="background:var(--sage);color:#fff">✏️ ${hasMood?'Редактировать':'Создать'}</button>
+          ${hasMood?`<button onclick="exportMoodFor(${i})" style="background:var(--dust);color:var(--charcoal)">📄 PDF</button>`:''}
+        </div>
+      </div>
+      <div class="clipanel ${c._tab==='info'?'on':''}" id="cp-info-${i}">
+        <span class="lbl" style="margin-top:0">Прогресс %</span>
+        <input class="inp" type="number" min="0" max="100" value="${prog}" onchange="updateProgress(${i},this.value)" style="margin-bottom:8px">
+        <div class="pb"><div class="pbf" style="width:${prog}%"></div></div>
+        <div class="clibtn-row" style="margin-top:10px">
+          <button onclick="editClient(${i})" style="background:var(--dust);color:var(--charcoal)">✏️ Редактировать</button>
+          <button onclick="exportFull(${i})" style="background:var(--gold);color:#fff">📄 Полный PDF</button>
+          <button onclick="delClient(${i})" style="background:#FFF0E8;color:var(--tc)">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchCliTab(i,tab){
+  S.clients[i]._tab=tab; sv(); renderClients();
+}
+function updateProgress(i,val){
+  S.clients[i].progress=val; sv();
+  // refresh just the bar
+  const bar=document.querySelector(`#cp-info-${i} .pbf`);
+  if(bar)bar.style.width=val+'%';
+}
+
+function openNewClient(){
+  document.getElementById('ncm-title').textContent='Новый клиент';
+  document.getElementById('nc-idx').value='-1';
+  ['nc-name','nc-contact','nc-price','nc-notes'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('nc-status').value='new';
+  openM('m-newclient');
+}
+function editClient(i){
+  const c=S.clients[i];
+  document.getElementById('ncm-title').textContent='Редактировать клиента';
+  document.getElementById('nc-idx').value=i;
+  document.getElementById('nc-name').value=c.name||'';
+  document.getElementById('nc-contact').value=c.contact||'';
+  document.getElementById('nc-service').value=c.service||'';
+  document.getElementById('nc-status').value=c.status||'new';
+  document.getElementById('nc-price').value=c.price||'';
+  document.getElementById('nc-notes').value=c.notes||'';
+  openM('m-newclient');
+}
+function saveClient(){
+  const name=document.getElementById('nc-name').value.trim();
+  if(!name)return alert('Введи имя клиента');
+  const obj={name,contact:document.getElementById('nc-contact').value,
+    service:document.getElementById('nc-service').value,status:document.getElementById('nc-status').value,
+    price:document.getElementById('nc-price').value,notes:document.getElementById('nc-notes').value,
+    progress:'0',_tab:'brief'};
+  const idx=parseInt(document.getElementById('nc-idx').value);
+  if(idx>=0){obj.brief=S.clients[idx].brief;obj.mood=S.clients[idx].mood;obj.progress=S.clients[idx].progress||'0';obj._tab=S.clients[idx]._tab||'brief';S.clients[idx]=obj;}
+  else S.clients.push(obj);
+  sv();renderClients();closeM('m-newclient');
+}
+function delClient(i){if(!confirm('Удалить клиента и все его данные?'))return;S.clients.splice(i,1);sv();renderClients();}
+
+// БРИФ
+function openBrief(i){
+  S.curClientIdx=i; sv();
+  const c=S.clients[i];
+  document.getElementById('brief-cliname').textContent='Клиент: '+c.name;
+  const b=c.brief||{};
+  const flds=['b-type','b-area','b-rooms','b-reno','b-problem','b-result','b-mood','b-budget','b-kids','b-deadline','b-extra'];
+  flds.forEach(f=>{const el=document.getElementById(f);if(el)el.value=b[f]||'';});
+  openM('m-brief');
+}
+function saveBrief(){
+  const i=S.curClientIdx;if(i<0)return;
+  const flds=['b-type','b-area','b-rooms','b-reno','b-problem','b-result','b-mood','b-budget','b-kids','b-deadline','b-extra'];
+  const b={};flds.forEach(f=>b[f]=document.getElementById(f).value);
+  S.clients[i].brief=b;sv();renderClients();
+  alert('✅ Бриф сохранён!');
+}
+function exportClientBrief(){exportBriefFor(S.curClientIdx);}
+function exportBriefFor(i){
+  const c=S.clients[i];if(!c)return;
+  const b=c.brief||{};
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Бриф — ${c.name}</title>
+  <style>body{font-family:-apple-system,sans-serif;max-width:680px;margin:36px auto;padding:0 28px;color:#2C2C2C;}
+  h1{font-family:Georgia,serif;font-size:26px;font-weight:300;font-style:italic;color:#C4714A;margin-bottom:3px;}
+  .sub{color:#6B6B6B;font-size:13px;margin-bottom:26px;}
+  h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#C4714A;margin:22px 0 9px;padding-bottom:5px;border-bottom:2px solid #E8E2D9;}
+  .row{display:flex;gap:7px;margin-bottom:9px;font-size:14px;}
+  .lb{font-weight:500;min-width:125px;color:#6B6B6B;flex-shrink:0;}
+  .val{flex:1;line-height:1.5;}
+  .ft{margin-top:36px;font-size:11px;color:#D4CFC7;border-top:1px solid #E8E2D9;padding-top:12px;}
+  @media print{body{margin:0;padding:18px;}}</style></head><body>
+  <h1>Бриф клиента</h1>
+  <div class="sub">${c.name} · ${c.contact||''} · ${now.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}</div>
+  <h2>Объект</h2>
+  <div class="row"><span class="lb">Тип:</span><span class="val">${b['b-type']||'—'}</span></div>
+  <div class="row"><span class="lb">Площадь:</span><span class="val">${b['b-area']||'—'}</span></div>
+  <div class="row"><span class="lb">Комнаты:</span><span class="val">${b['b-rooms']||'—'}</span></div>
+  <div class="row"><span class="lb">Ремонт:</span><span class="val">${b['b-reno']||'—'}</span></div>
+  <h2>Запрос</h2>
+  <div class="row"><span class="lb">Проблема:</span><span class="val">${(b['b-problem']||'—').replace(/\n/g,'<br>')}</span></div>
+  <div class="row"><span class="lb">Результат:</span><span class="val">${(b['b-result']||'—').replace(/\n/g,'<br>')}</span></div>
+  <div class="row"><span class="lb">Атмосфера:</span><span class="val">${b['b-mood']||'—'}</span></div>
+  <h2>Бюджет</h2>
+  <div class="row"><span class="lb">Бюджет:</span><span class="val">${b['b-budget']||'—'}</span></div>
+  <div class="row"><span class="lb">Дети/живот.:</span><span class="val">${b['b-kids']||'—'}</span></div>
+  <div class="row"><span class="lb">Сроки:</span><span class="val">${b['b-deadline']||'—'}</span></div>
+  <div class="row"><span class="lb">Доп.:</span><span class="val">${(b['b-extra']||'—').replace(/\n/g,'<br>')}</span></div>
+  <div class="ft">Кабинет декоратора · ${now.toLocaleDateString('ru-RU')}</div>
+  </body></html>`;
+  printWin(html);
+}
+
+// МУДБОРД
+const PALGROUPS=[
+  {g:'Нейтральные',c:[{h:'#F5F0E8',n:'Крем'},{h:'#D4C5A9',n:'Льняной'},{h:'#A89880',n:'Песок'},{h:'#6B5B45',n:'Какао'},{h:'#2C2C2C',n:'Уголь'},{h:'#FFFFFF',n:'Белый'}]},
+  {g:'Тёплые',c:[{h:'#C4714A',n:'Терракота'},{h:'#E8956D',n:'Персик'},{h:'#B8963E',n:'Золото'},{h:'#D4763B',n:'Охра'},{h:'#8B4513',n:'Кирпич'},{h:'#E8C57A',n:'Пшеница'}]},
+  {g:'Природные',c:[{h:'#7A8C6E',n:'Шалфей'},{h:'#4A7C5F',n:'Еловый'},{h:'#8FA8A0',n:'Мятный'},{h:'#6B8CAE',n:'Голубой'},{h:'#4A5568',n:'Сланец'},{h:'#9B7FA8',n:'Лаванда'}]},
+];
+const KWS=['уют','свет','природа','минимализм','тепло','простор','роскошь','эклектика','ретро','скандинавия','бохо','japandi','арт-деко','индустриал'];
+
+function renderPalGroups(){
+  document.getElementById('pal-groups').innerHTML=PALGROUPS.map(g=>`
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mid);margin-bottom:6px">${g.g}</div>
+    <div class="prow">${g.c.map(c=>`<div class="pchip" style="background:${c.h}${c.h==='#FFFFFF'?';border:2px solid var(--lgray)':''}" title="${c.n}" onclick="addPal('${c.h}','${c.n}')"></div>`).join('')}</div>
+  `).join('');
+}
+function renderKw(selKw){
+  document.getElementById('kwcloud').innerHTML=KWS.map(k=>`<span class="kw ${selKw.includes(k)?'sel':''}" onclick="toggleKw('${k}')">${k}</span>`).join('');
+}
+function renderSelPal(pal){
+  const el=document.getElementById('sel-pal');
+  if(!pal||!pal.length){el.innerHTML='<span style="font-size:13px;color:var(--lgray);align-self:center">Нажми на цвета выше →</span>';return;}
+  el.innerHTML=pal.map((p,i)=>`<div style="text-align:center;cursor:pointer" onclick="removePal(${i})">
+    <div style="width:36px;height:36px;background:${p.h};border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.12);margin:0 auto 3px"></div>
+    <div style="font-size:10px;color:var(--mid)">${p.n}</div>
+  </div>`).join('');
+}
+function openMood(i){
+  S.curClientIdx=i;sv();
+  const c=S.clients[i];
+  document.getElementById('mood-cliname').textContent='Клиент: '+c.name;
+  const m=c.mood||{};
+  S.curMoodPal=m.palette||[];
+  S.curMoodKw=m.keywords||[];
+  document.getElementById('mood-concept').value=m.concept||'';
+  document.getElementById('mood-no').value=m.noLike||'';
+  document.getElementById('mood-refs').value=m.refs||'';
+  renderKw(S.curMoodKw);
+  renderSelPal(S.curMoodPal);
+  openM('m-mood');
+}
+function toggleKw(k){
+  S.curMoodKw=S.curMoodKw.includes(k)?S.curMoodKw.filter(x=>x!==k):[...S.curMoodKw,k];
+  renderKw(S.curMoodKw);
+}
+function addPal(h,n){
+  if(S.curMoodPal.find(p=>p.h===h))return;
+  S.curMoodPal.push({h,n});renderSelPal(S.curMoodPal);
+}
+function removePal(i){S.curMoodPal.splice(i,1);renderSelPal(S.curMoodPal);}
+function saveMood(){
+  const i=S.curClientIdx;if(i<0)return;
+  S.clients[i].mood={keywords:[...S.curMoodKw],palette:[...S.curMoodPal],
+    concept:document.getElementById('mood-concept').value,
+    noLike:document.getElementById('mood-no').value,
+    refs:document.getElementById('mood-refs').value};
+  sv();renderClients();alert('✅ Мудборд сохранён!');
+}
+function exportClientMood(){exportMoodFor(S.curClientIdx);}
+function exportMoodFor(i){
+  const c=S.clients[i];if(!c||!c.mood)return alert('Сначала заполни мудборд');
+  const m=c.mood;
+  const pal=(m.palette||[]).map(p=>`<div style="text-align:center;display:inline-block;margin:0 5px 8px"><div style="width:42px;height:42px;background:${p.h};border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15);margin:0 auto 3px"></div><div style="font-size:11px;color:#6B6B6B">${p.n}</div></div>`).join('')||'—';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Мудборд — ${c.name}</title>
+  <style>body{font-family:-apple-system,sans-serif;max-width:680px;margin:36px auto;padding:0 28px;color:#2C2C2C;}
+  h1{font-family:Georgia,serif;font-size:26px;font-weight:300;font-style:italic;color:#C4714A;margin-bottom:3px;}
+  .sub{color:#6B6B6B;font-size:13px;margin-bottom:26px;}
+  h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#7A8C6E;margin:22px 0 9px;padding-bottom:5px;border-bottom:2px solid #E8E2D9;}
+  .concept{font-size:14px;line-height:1.7;background:#FFF8F0;border-radius:11px;padding:14px;border-left:3px solid #C4714A;}
+  .kws{font-size:15px;line-height:2;}
+  .fld{font-size:14px;line-height:1.6;margin-bottom:14px;}
+  .ft{margin-top:36px;font-size:11px;color:#D4CFC7;border-top:1px solid #E8E2D9;padding-top:12px;}
+  @media print{body{margin:0;padding:18px;}}</style></head><body>
+  <h1>Мудборд проекта</h1>
+  <div class="sub">${c.name} · ${now.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}</div>
+  <h2>Настроение</h2><div class="kws">${(m.keywords||[]).join(' · ')||'—'}</div>
+  <h2>Цветовая палитра</h2><div>${pal}</div>
+  <h2>Концепция</h2><div class="concept">${(m.concept||'—').replace(/\n/g,'<br>')}</div>
+  ${m.noLike?`<h2>Что НЕ нравится</h2><div class="fld">${m.noLike.replace(/\n/g,'<br>')}</div>`:''}
+  ${m.refs?`<h2>Референсы</h2><div class="fld">${m.refs.replace(/\n/g,'<br>')}</div>`:''}
+  <div class="ft">Кабинет декоратора · ${now.toLocaleDateString('ru-RU')}</div>
+  </body></html>`;
+  printWin(html);
+}
+
+// ПОЛНЫЙ PDF по клиенту
+function exportFull(i){
+  const c=S.clients[i];if(!c)return;
+  const b=c.brief||{};const m=c.mood||{};
+  const pal=(m.palette||[]).map(p=>`<span style="display:inline-block;text-align:center;margin:0 5px 8px"><span style="display:block;width:36px;height:36px;background:${p.h};border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.12);margin:0 auto 2px"></span><span style="font-size:10px;color:#6B6B6B">${p.n}</span></span>`).join('')||'—';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Проект — ${c.name}</title>
+  <style>body{font-family:-apple-system,sans-serif;max-width:680px;margin:36px auto;padding:0 28px;color:#2C2C2C;}
+  h1{font-family:Georgia,serif;font-size:28px;font-weight:300;font-style:italic;color:#C4714A;margin-bottom:3px;}
+  .sub{color:#6B6B6B;font-size:13px;margin-bottom:26px;}
+  h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#C4714A;margin:22px 0 9px;padding-bottom:5px;border-bottom:2px solid #E8E2D9;}
+  h2.g{color:#7A8C6E;}
+  .row{display:flex;gap:7px;margin-bottom:8px;font-size:14px;}
+  .lb{font-weight:500;min-width:125px;color:#6B6B6B;flex-shrink:0;}
+  .val{flex:1;line-height:1.5;}
+  .concept{font-size:14px;line-height:1.7;background:#FFF8F0;border-radius:10px;padding:13px;border-left:3px solid #C4714A;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:500;}
+  .pbar{height:6px;background:#E8E2D9;border-radius:3px;overflow:hidden;margin-top:6px;}
+  .pbf{height:100%;background:linear-gradient(90deg,#C4714A,#B8963E);border-radius:3px;}
+  .ft{margin-top:36px;font-size:11px;color:#D4CFC7;border-top:1px solid #E8E2D9;padding-top:12px;}
+  @media print{body{margin:0;padding:18px;}}</style></head><body>
+  <h1>Проект: ${c.name}</h1>
+  <div class="sub">${c.contact||''} · ${now.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}</div>
+  <h2>Проект</h2>
+  <div class="row"><span class="lb">Услуга:</span><span class="val">${c.service}</span></div>
+  <div class="row"><span class="lb">Статус:</span><span class="val">${SLABEL[c.status]}</span></div>
+  ${c.price?`<div class="row"><span class="lb">Стоимость:</span><span class="val">${c.price}</span></div>`:''}
+  <div class="row"><span class="lb">Прогресс:</span><span class="val">${parseInt(c.progress)||0}%</span></div>
+  <div class="pbar"><div class="pbf" style="width:${parseInt(c.progress)||0}%"></div></div>
+  ${c.notes?`<div class="row" style="margin-top:10px"><span class="lb">Заметки:</span><span class="val">${c.notes}</span></div>`:''}
+  ${b['b-area']?`
+  <h2>Бриф</h2>
+  <div class="row"><span class="lb">Объект:</span><span class="val">${b['b-type']||'—'} · ${b['b-area']||'—'}</span></div>
+  <div class="row"><span class="lb">Комнаты:</span><span class="val">${b['b-rooms']||'—'}</span></div>
+  <div class="row"><span class="lb">Проблема:</span><span class="val">${(b['b-problem']||'—').replace(/\n/g,'<br>')}</span></div>
+  <div class="row"><span class="lb">Результат:</span><span class="val">${(b['b-result']||'—').replace(/\n/g,'<br>')}</span></div>
+  <div class="row"><span class="lb">Бюджет:</span><span class="val">${b['b-budget']||'—'}</span></div>
+  <div class="row"><span class="lb">Сроки:</span><span class="val">${b['b-deadline']||'—'}</span></div>`:''}
+  ${m.concept?`
+  <h2 class="g">Мудборд</h2>
+  <div class="row"><span class="lb">Настроение:</span><span class="val">${(m.keywords||[]).join(' · ')||'—'}</span></div>
+  <div class="row"><span class="lb">Палитра:</span><span class="val">${pal}</span></div>
+  <div style="margin-top:10px" class="concept">${(m.concept||'').replace(/\n/g,'<br>')}</div>`:''}
+  <div class="ft">Кабинет декоратора · ${now.toLocaleDateString('ru-RU')}</div>
+  </body></html>`;
+  printWin(html);
+}
+
+function printWin(html){
+  const w=window.open('','_blank');
+  if(!w){alert('Разреши всплывающие окна в Safari:\nНастройки → Safari → Блокировка всплывающих окон → выключить');return;}
+  w.document.write(html);w.document.close();
+  setTimeout(()=>w.print(),700);
+}
+
+// ═══════════════════════════════
+// LESSONS
+// ═══════════════════════════════
+const LESSONS=[
+  {week:'Неделя 1–2',id:'l1',title:'Баланс в пространстве',meta:'Теория + практика · ~30 мин',
+   theory:[{b:'Баланс',t:' — визуальное равновесие. Взгляд чувствует дисбаланс мгновенно, даже если не понимает почему «что-то не так».'},
+           {b:'Симметричный:',t:' левая = правая. Два кресла по бокам дивана. Ощущение: порядок, классика.'},
+           {b:'Асимметричный:',t:' разные предметы с одинаковым визуальным весом. Большой диван + высокий торшер + крупная картина.'},
+           {b:'Визуальный вес:',t:' тёмный тяжелее светлого, большой — маленького, яркий — нейтрального.'}],
+   tasks:[{id:'t1a',text:'Зайди в Pinterest, найди 3 интерьера',tip:'Поищи «living room interior» или «уютная гостиная»'},
+          {id:'t1b',text:'В каждом определи: симметрия или асимметрия?',tip:'Запиши в Дневник'},
+          {id:'t1c',text:'Посмотри на одну комнату у себя дома',tip:'Есть ли баланс?'},
+          {id:'t1d',text:'Попробуй переставить 1–2 предмета',tip:'Просто посмотри глазом'}],
+   quiz:{id:'q1',q:'Тёмный диван слева. Чем уравновесить правую сторону?',opts:['Маленький светлый пуф','Высокое зеркало + крупное растение','Ничего — диван красивый'],correct:1,explain:'Зеркало даёт вертикаль и визуальный вес. Растение добавляет объём. Вместе тянут на тёмный диван.'}},
+  {week:'',id:'l2',title:'Ритм и повторение',meta:'Теория + практика · ~25 мин',
+   theory:[{b:'Ритм',t:' — повторение элементов, создающее порядок. Без ритма пространство выглядит случайным.'},
+           {b:'Правило трёх точек:',t:' акцентный цвет должен появиться минимум в трёх местах. Иначе — ошибка.'},
+           {b:'Как создать:',t:' подушка + ваза + рамка одного цвета. Одинаковые материалы в разных предметах.'}],
+   tasks:[{id:'t2a',text:'Выбери один цвет в своей комнате',tip:'Например, оттенок терракотового'},
+          {id:'t2b',text:'Поставь его в 3 разных точках',tip:'Подушка, книга, ваза — сойдёт'},
+          {id:'t2c',text:'Сфотографируй до и после',tip:'Первые фото для портфолио!'}],
+   quiz:{id:'q2',q:'Поставила красную вазу. Как использовать цвет правильно?',opts:['Оставить одну — пусть выделяется','Добавить красную деталь ещё в двух местах','Везде поставить красные вещи'],correct:1,explain:'Одна деталь — случайность. Три точки — замысел. Везде — перегруз.'}},
+  {week:'',id:'l3',title:'Акцент и фокусная точка',meta:'Теория + практика · ~20 мин',
+   theory:[{b:'Акцент',t:' — место куда взгляд приходит первым. В каждой зоне одна фокусная точка. Ноль — скучно. Пять — хаос.'},
+           {b:'Что может быть акцентом:',t:' крупная картина, яркий диван, необычный светильник, акцентная стена, крупное растение.'},
+           {b:'Важно:',t:' всё остальное поддерживает акцент. Стена яркая — мебель нейтральная.'}],
+   tasks:[{id:'t3a',text:'Определи фокусную точку в одной комнате',tip:'Куда взгляд идёт первым?'},
+          {id:'t3b',text:'Если акцента нет — что им может стать?'},
+          {id:'t3c',text:'Разбери 2 интерьера из Pinterest: где акцент?',tip:'Запиши в Дневник'}],
+   quiz:{id:'q3',q:'Яркая картина + цветной диван + пёстрый ковёр. Что скажешь?',opts:['Чем больше тем лучше','Выбрать один акцент, остальное нейтральнее','Убрать всё и начать заново'],correct:1,explain:'Три конкурирующих акцента — визуальный шум. Выбери сильнейшее, остальное успокой нейтральными оттенками.'}},
+  {week:'',id:'l4',title:'Цветовой круг и схемы',meta:'Теория + практика · ~35 мин',
+   theory:[{b:'Правило 60–30–10:',t:' 60% основной цвет (стены), 30% вспомогательный (текстиль), 10% акцент (подушки, ваза).'},
+           {b:'Монохромная:',t:' один цвет, разные оттенки. Легко, изысканно.'},
+           {b:'Аналоговая:',t:' соседние цвета (бежевый + терракота + охра). Тепло, гармонично.'},
+           {b:'Температура:',t:' тёплые — уют. Холодные — воздух и простор.'}],
+   tasks:[{id:'t4a',text:'Собери 5 цветовых палитр в Pinterest',tip:'По настроениям: уют, офис, детская, минимализм, природа'},
+          {id:'t4b',text:'В каждой определи 60–30–10'},
+          {id:'t4c',text:'Посмотри свою комнату — какая схема сейчас?'},
+          {id:'t4d',text:'Собери палитру для тестового клиента в разделе Клиенты'}],
+   quiz:{id:'q4',q:'Клиент хочет уютную спальню. Какая палитра?',opts:['Холодный серый + белый + синий','Тёплый бежевый + терракота + льняной','Яркий красный + жёлтый + зелёный'],correct:1,explain:'Тёплые оттенки — уют и расслабление. Холодные тонизируют. Яркая комбинация слишком активна для сна.'}},
+  {week:'Неделя 3–4',id:'l5',title:'Текстиль: твой главный инструмент',meta:'Теория + практика · ~30 мин',
+   theory:[{b:'Лён',t:' — воздух, натуральность, мнётся (это красиво).'},
+           {b:'Бархат',t:' — роскошь, поглощает свет, создаёт тепло.'},
+           {b:'Как миксовать:',t:' смешивай фактуры, не только цвета. Гладкий бархат + грубый лён + шерсть = интересно.'},
+           {b:'Ковёр:',t:' всегда больше чем кажется нужным. Маленький ковёр под большим диваном — самая частая ошибка.'}],
+   tasks:[{id:'t5a',text:'Найди 3 примера правильного размера ковра',tip:'«rug size living room» на Pinterest'},
+          {id:'t5b',text:'Проверь шторы дома: до пола?',tip:'Шторы до пола визуально поднимают потолок'},
+          {id:'t5c',text:'Найди 2 интерьера с хорошим миксом текстиля'},
+          {id:'t5d',text:'Переложи подушки по-другому',tip:'Фото до/после — в Дневник'}],
+   quiz:{id:'q5',q:'Что даст максимальный эффект за минимум денег?',opts:['Новые шторы до пола из льна','Маленькие декоративные подушки','Ковёр 100×140 под журнальный столик'],correct:0,explain:'Шторы до пола — самое сильное вложение. Поднимают потолок и меняют восприятие комнаты.'}},
+  {week:'',id:'l6',title:'Три слоя света',meta:'Теория + практика · ~25 мин',
+   theory:[{b:'Основной',t:' — люстра, споты. Обычно уже есть.'},
+           {b:'Рабочий',t:' — лампа над столом, бра у зеркала.'},
+           {b:'Акцентный',t:' — торшер, настольная лампа, свечи. Создаёт уют.'},
+           {b:'Правило:',t:' минимум 3 источника на разной высоте. Твоя задача — добавить 2-й и 3-й слой.'}],
+   tasks:[{id:'t6a',text:'Посчитай источники света в одной комнате',tip:'Сколько их? На какой высоте?'},
+          {id:'t6b',text:'Вечером включи только торшер / свечи',tip:'Как меняется ощущение?'},
+          {id:'t6c',text:'Найди 3 интерьера с хорошим освещением'}],
+   quiz:{id:'q6',q:'Только одна люстра. Что добавишь в первую очередь?',opts:['Вторую люстру','Торшер + настольную лампу на полку','Более яркую лампочку'],correct:1,explain:'Торшер и настольная лампа добавляют сразу 2-й и 3-й слой. Просто яркая лампочка — всё равно один слой.'}},
+  {week:'Неделя 5–6',id:'l7',title:'Масштаб и группировка',meta:'Теория + практика · ~30 мин',
+   theory:[{b:'Масштаб',t:' — соотношение предметов между собой и с комнатой.'},
+           {b:'Правило нечётных чисел:',t:' группы из 3, 5, 7 выглядят естественнее. Разная высота в группе.'},
+           {b:'Частые ошибки:',t:' маленький ковёр, крошечные картины на большой стене.'}],
+   tasks:[{id:'t7a',text:'Посмотри на полки у себя дома',tip:'Группы по 3? Разная высота?'},
+          {id:'t7b',text:'Переставь предметы на одной полке',tip:'3 разные высоты, один объединяющий элемент'},
+          {id:'t7c',text:'Сфотографируй результат — это твой кейс!'}],
+   quiz:{id:'q7',q:'4 одинаковые маленькие рамки на полке. Что посоветуешь?',opts:['Купить ещё больше','Убрать одну, добавить предмет другой высоты','Покрасить в разные цвета'],correct:1,explain:'3 предмета + разная высота = баланс. Нечётное число смотрится органичнее.'}},
+  {week:'Неделя 7–8',id:'l8',title:'Работа с клиентом',meta:'Практика · ~40 мин',
+   theory:[{b:'Что узнать на брифе:',t:' как живут, что раздражает, референсы, бюджет, сроки.'},
+           {b:'Референсы:',t:' попроси 5–7 фото которые нравятся. Клиент не знает слов, но знает визуально.'},
+           {b:'После аудита:',t:' список конкретных действий — что переставить, убрать, добавить.'}],
+   tasks:[{id:'t8a',text:'Создай тестового клиента в разделе Клиенты',tip:'Заполни бриф и мудборд'},
+          {id:'t8b',text:'Пройди все пункты Аудита в одной комнате'},
+          {id:'t8c',text:'Напиши 5 конкретных рекомендаций',tip:'Запиши в Дневник'},
+          {id:'t8d',text:'Экспортируй полный PDF клиента',tip:'Первый профессиональный документ!'}],
+   quiz:{id:'q8',q:'«Хочу уют, но не знаю что это значит». Что делаешь?',opts:['Угадываешь сама','Просишь показать 5–7 фото интерьеров','Говоришь что без конкретики невозможно'],correct:1,explain:'Из 5–7 картинок увидишь паттерн: цвета, стиль, настроение.'}}
+];
+
+function renderLessons(){
+  const wrap=document.getElementById('lessons-wrap');
+  let html='';let lastW='';let totT=0,dnT=0,dnL=0;
+  LESSONS.forEach((l,li)=>{
+    l.tasks.forEach(t=>{totT++;if(S.tasksDone[t.id])dnT++;});
+    if(l.tasks.every(t=>S.tasksDone[t.id]))dnL++;
+    if(l.week&&l.week!==lastW){html+=`<div class="wtag">${l.week}</div>`;lastW=l.week;}
+    const allD=l.tasks.every(t=>S.tasksDone[t.id]);
+    html+=`<div class="lc" id="lc-${l.id}">
+      <div class="lh" onclick="toggleL('${l.id}')">
+        <div class="ln" style="background:${allD?'var(--sage)':'var(--tc)'}">${allD?'✓':li+1}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:500">${l.title}</div><div style="font-size:12px;color:var(--mid);margin-top:2px">${l.meta}</div></div>
+        <div class="la">▶</div>
+      </div>
+      <div class="lb">
+        <div class="th">${l.theory.map(t=>`<p><strong style="color:var(--tc)">${t.b}</strong>${t.t}</p>`).join('')}</div>
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px">📌 Задания</div>
+        ${l.tasks.map(t=>{const d=!!S.tasksDone[t.id];return`<div class="ti ${d?'dn':''}" onclick="toggleTask('${t.id}','${l.id}')"><div class="tb2"></div><div><div class="td">${t.text}</div>${t.tip?`<div class="ttp">💡 ${t.tip}</div>`:''}</div></div>`;}).join('')}
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin:13px 0 6px">🧠 Проверь себя</div>
+        <div class="qz">
+          <div class="qq">${l.quiz.q}</div>
+          <div class="qos">${l.quiz.opts.map((o,i)=>{const a=S.quizAnswers[l.quiz.id];let cls='';if(a!==undefined){cls=i===l.quiz.correct?'ok':(i===a?'no':'');}return`<button class="qo ${cls}" onclick="answerQ('${l.quiz.id}',${i},${l.quiz.correct},'${l.id}')">${o}</button>`;}).join('')}</div>
+          <div class="qe ${S.quizAnswers[l.quiz.id]!==undefined?'sh':''}">${S.quizAnswers[l.quiz.id]===l.quiz.correct?'✅ ':'❌ '}${l.quiz.explain}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  wrap.innerHTML=html;
+  const pct=totT?Math.round(dnT/totT*100):0;
+  document.getElementById('ls-done').textContent=dnL;
+  document.getElementById('ls-tasks').textContent=dnT;
+  document.getElementById('ls-pct').textContent=pct+'%';
+  document.getElementById('lpbar').style.width=pct+'%';
+}
+function toggleL(id){document.getElementById('lc-'+id).classList.toggle('op');}
+function toggleTask(tid,lid){S.tasksDone[tid]=!S.tasksDone[tid];sv();renderLessons();document.getElementById('lc-'+lid).classList.add('op');}
+function answerQ(qid,chosen,correct,lid){if(S.quizAnswers[qid]!==undefined)return;S.quizAnswers[qid]=chosen;sv();renderLessons();document.getElementById('lc-'+lid).classList.add('op');}
+
+// ДНЕВНИК
+function renderDiary(){
+  const list=document.getElementById('diary-list');
+  const e=S.entries;
+  document.getElementById('d-days').textContent=new Set(e.map(x=>x.date)).size;
+  document.getElementById('d-ent').textContent=e.length;
+  document.getElementById('d-wk').textContent=Math.min(Math.floor(e.length/5)+1,17)+'+';
+  if(!e.length){list.innerHTML=`<div style="text-align:center;padding:36px 18px;color:var(--mid)"><div style="font-size:36px;margin-bottom:10px">📓</div><p style="font-size:14px">Нажми «+ Новая запись»</p></div>`;return;}
+  list.innerHTML=[...e].reverse().map((en,i)=>`<div class="de"><div class="dm"><span class="dd">${en.date}</span><div style="display:flex;align-items:center;gap:6px"><span class="dtop">${en.topic}</span><button class="dbt" onclick="delDiary(${e.length-1-i})">×</button></div></div><div style="font-size:14px;line-height:1.6">${en.text}</div>${en.insight?`<div class="dins">💡 ${en.insight}</div>`:''}</div>`).join('');
+}
+function saveDiary(){
+  const text=document.getElementById('d-text').value.trim();
+  if(!text)return alert('Напиши что-нибудь 😊');
+  S.entries.push({date:now.toLocaleDateString('ru-RU',{day:'numeric',month:'long'}),topic:document.getElementById('d-topic').value,text,insight:document.getElementById('d-ins').value.trim()});
+  sv();renderDiary();
+  document.getElementById('d-text').value='';document.getElementById('d-ins').value='';
+  closeM('dm');
+}
+function delDiary(i){if(!confirm('Удалить запись?'))return;S.entries.splice(i,1);sv();renderDiary();}
+
+// АУДИТ
+const AITEMS=[
+  {s:'📸 Фиксация'},{t:'Сфотографировать каждый угол',sub:'Общий план + детали'},{t:'Замерить комнату',sub:'Длина × ширина × высота'},{t:'Отметить окна и сторону света',sub:'Север/Юг влияет на цвет'},{t:'Зафиксировать розетки и выключатели'},
+  {s:'💡 Освещение'},{t:'Сколько источников света?',sub:'Минимум 3 на разной высоте'},{t:'Есть рабочий и акцентный свет?'},{t:'Как меняется свет в течение дня?',sub:'Утро / день / вечер'},
+  {s:'🪑 Мебель'},{t:'Удобен маршрут движения?',sub:'Нет ли препятствий'},{t:'Мебель по масштабу комнаты?'},{t:'Можно ли переставить?'},{t:'Хватает хранения?'},
+  {s:'🎨 Цвет'},{t:'Основной цвет стен и пола?'},{t:'Что выбивается из гаммы?'},{t:'Есть ли акцентный цвет?'},
+  {s:'🧺 Текстиль'},{t:'Ковёр — есть? Подходит по размеру?'},{t:'Шторы — до пола?'},{t:'Подушки, пледы — есть?'},
+  {s:'🌿 Декор'},{t:'Есть фокусная точка в комнате?'},{t:'Есть растения или живые элементы?'},{t:'Есть лишние вещи — визуальный шум?'},{t:'Как организованы открытые полки?'},
+  {s:'🔧 Функция'},{t:'Клиенту удобно пользоваться?'},{t:'Что больше всего раздражает?'},{t:'Есть мёртвые зоны?'},
+];
+function renderAudit(){
+  const list=document.getElementById('audit-list');
+  let html='';let tot=0,dn=0;
+  AITEMS.forEach((item,i)=>{
+    if(item.s){html+=`<div class="sec">${item.s}</div>`;return;}
+    const key='a'+i;const chk=!!S.auditChecks[key];
+    if(chk)dn++;tot++;
+    html+=`<div class="ci ${chk?'chk':''}" onclick="toggleAudit('${key}')"><div class="cb"></div><div><div class="ct2">${item.t}</div>${item.sub?`<div class="csb">${item.sub}</div>`:''}</div></div>`;
+  });
+  list.innerHTML=html;
+  document.getElementById('apt').textContent=`Выполнено: ${dn} из ${tot}`;
+  document.getElementById('apb').style.width=tot?(dn/tot*100)+'%':'0%';
+}
+function toggleAudit(key){S.auditChecks[key]=!S.auditChecks[key];sv();renderAudit();}
+function resetAudit(){if(!confirm('Сбросить для нового клиента?'))return;S.auditChecks={};sv();renderAudit();}
+
+// INIT
+renderPalGroups();
+renderClients();
+renderLessons();
+renderDiary();
+renderAudit();
+</script>
+</body>
+</html>
